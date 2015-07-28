@@ -1,0 +1,6 @@
+Plugin Name -- Form Connector For Caldera Forms
+Text domain -- cf-form-connector
+Function prefix -- cf_form_connector
+Class prefix - n/a
+Root namespace -- n/a
+Filter Prefix -- n/a

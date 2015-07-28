@@ -1,0 +1,14 @@
+{
+    "name": "calderawp/cf-form-connector",
+    "description": "Connect multiple Caldera Forms into a sequence of form",
+    "type": "wordpress-plugin",
+    "license": "gplv2+",
+    "authors": [
+        {
+            "name": "Josh Pollock",
+            "email": "Josh@CalderaWP.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}
