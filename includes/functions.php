@@ -21,8 +21,8 @@
 function cf_form_connector_register($processors){
 
 	$processors['form-connector'] = array(
-		"name"				=>	__('Form Connector', 'cf-form-connector'),
-		"description"		=>	__( 'Add Postmatic optins to your form.', 'cf-form-connector'),
+		"name"				=>	__('Connected Forms', 'cf-form-connector'),
+		"description"		=>	__( 'Connect multiple forms.', 'cf-form-connector'),
 		//"icon"				=>	CF_FORM_CON_URL . "icon.png",
 		"author"			=>	"Josh Pollock for CalderaWP LLC",
 		"author_url"		=>	"https://CalderaWP.com",
