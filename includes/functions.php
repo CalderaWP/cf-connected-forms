@@ -9,6 +9,59 @@
  * @copyright 2015 Josh Pollock for CalderaWP
  */
 
+		// add form type
+		add_action( 'caldera_forms_get_form_templates', function( $templates ){
+			$templates['cf_connected_form'] = array(
+				'name'		=>	'Connected Form',
+				'template'	=>	array(
+					'is_connected_form' => true
+				)
+			);
+			
+			return $templates;
+		}, 12);
+
+		// set new connected form type
+		add_filter( 'caldera_forms_create_form', function( $form ){
+			parse_str( $_POST['data'], $newform );
+			if( !empty( $newform['connected_form_primary'] ) ){
+				$form['is_connected_form'] = true;
+			}
+			return $form;
+		} );
+
+		// setup form tabs for connected form
+		add_filter( 'caldera_forms_get_panel_extensions', function( $panels ){
+			if( !empty( $_GET['edit'] ) ){
+				$form = \Caldera_Forms::get_form( $_GET['edit'] );
+				if( !empty( $form['is_connected_form'] ) ){
+
+					//  setup new panels for this type.
+					//var_dump( $panels );
+					//die;
+					//uneeded panels
+					unset( $panels['form_layout']['tabs']['pages'] );
+					unset( $panels['form_layout']['tabs']['conditions'] );
+					unset( $panels['form_layout']['tabs']['processors'] );
+					unset( $panels['form_layout']['tabs']['variables'] );
+					unset( $panels['form_layout']['tabs']['responsive'] );
+
+					$panels['form_layout']['tabs']['layout']['name'] = __( 'Connections', 'connected-forms' );
+					$panels['form_layout']['tabs']['layout']['label'] = __( 'Connected Forms Builder', 'connected-forms' );
+					$panels['form_layout']['tabs']['layout']['actions'] = array();
+					$panels['form_layout']['tabs']['layout']['side_panel'] = null;
+					$panels['form_layout']['tabs']['layout']['canvas'] = CF_FORM_CON_PATH . 'includes/templates/connection-builder.php';
+
+					// add script
+					wp_enqueue_script( 'jsplumb', CF_FORM_CON_URL . 'assets/js/jsPlumb-1.7.10-min.js', array(), CF_FORM_CON_VER );
+					wp_enqueue_script( 'connector-ui', CF_FORM_CON_URL . 'assets/js/connector-ui.js', array('jsplumb'), CF_FORM_CON_VER );
+					wp_enqueue_style( 'connector-ui', CF_FORM_CON_URL . 'assets/css/connector-ui.css', array(), CF_FORM_CON_VER );
+					
+				}
+			}
+			return $panels;
+		});
+
 
 /**
  * Registers the Form Connector processor

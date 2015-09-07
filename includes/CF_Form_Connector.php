@@ -120,6 +120,9 @@ class CF_Form_Connector {
 		$this->buttons_clicked( $config );
 
 		add_filter( 'caldera_forms_redirect_url', array( $this, 'process_redirect' ), 10, 2 );
+
+
+		
 	}
 
 	/**

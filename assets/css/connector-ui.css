@@ -1,0 +1,78 @@
+.flowchart-form .window {
+  background-color: #fff;
+  border: 1px solid #cfcfcf;
+  color: #333;
+  cursor: move;
+  opacity: 0.6;
+  padding: 6px 14px;
+  position: absolute;
+  text-align: center;
+  transition: box-shadow 0.15s ease-in 0s;
+  width: auto;
+  z-index: 20;
+}
+.flowchart-form .window:hover {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  opacity: 1;
+}
+.flowchart-form .active {
+    border: 1px dotted green;
+}
+
+.flowchart-form .hover {
+    border: 1px dotted red;
+}
+
+.flowchart-form ._jsPlumb_connector {
+    z-index: 4;
+}
+
+.flowchart-form ._jsPlumb_endpoint, .endpointTargetLabel, .endpointSourceLabel {
+    z-index: 21;
+    cursor: pointer;
+    font-size: 10px;
+}
+
+.endpointSourceLabel:hover{
+	opacity: 0.5;
+}
+.endpointSourceLabel:hover{
+	opacity: 1;
+}
+.flowchart-form .aLabel {
+	display: none;
+    padding: 0.4em;
+    font: 12px sans-serif;
+    color: #444;
+    z-index: 21;
+    opacity: 0.8;
+    filter: alpha(opacity=80);
+    cursor: pointer;
+}
+
+.flowchart-form .aLabel._jsPlumb_hover {
+    background-color: #fff;
+    color: #333;
+    border: 1px solid #cfcfcf;
+    display: inline-block;
+}
+
+.form-node.start-point{
+	box-shadow: 9px 0 0 #a3be5f inset;
+	cursor: default;
+}
+.delete-endpoint{
+  float: left;
+}
+path, ._jsPlumb_endpoint {
+    cursor: pointer;
+}
+
+.cf-form-canvas {
+	position: relative;  
+}
+
+.cf-node .button {
+  margin: -1px -5px 0 5px;
+  padding: 3px 1px !important;
+}
