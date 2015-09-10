@@ -137,6 +137,8 @@ class CF_Form_Connector {
 	 * @return string
 	 */
 	public function process_redirect( $url, $form ) {
+		var_dump( $form['connected_stage_id'] );
+		die;
 		if ( $form[ 'ID' ] == $this->form_id ) {
 			$parsed_url = parse_url( $url );
 

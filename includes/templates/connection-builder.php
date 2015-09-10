@@ -11,13 +11,23 @@ foreach( $forms as $form_id=>$form ){
 
 if( !empty( $element['condition_points']['conditions'] ) ){
     foreach( $element['condition_points']['conditions'] as $condition_point ){
+        if( empty( $element['node'][ $condition_point['connect'] ] ) ){
+            // dont output points for nonexistant forms
+            continue;
+        }
+        if( $condition_point['connect'] == $condition_point['parent'] ) {
+            unset( $element['node'][ $condition_point['connect'] ] );
+            continue;
+        }
     ?>
 
-    <span class="condition-point" data-src="<?php echo $condition_point['id']; ?>" data-from="<?php echo $condition_point['parent']; ?>" data-to="<?php echo $condition_point['connect']; ?>"></span>
+    <span class="condition-point" data-src="<?php echo $condition_point['id']; ?>" data-name="<?php echo $condition_point['name']; ?>" data-from="<?php echo $condition_point['parent']; ?>" data-to="<?php echo $condition_point['connect']; ?>"></span>
 
     <?php 
     }
-} 
+}else{
+    $element['condition_points'] = array();
+}
 ?>
 
 <input type="hidden" name="config[is_connected_form]" value="true">
@@ -40,9 +50,12 @@ if( !empty( $element['condition_points']['conditions'] ) ){
                         <strong><?php echo $forms[ $node['form'] ]['name']; ?></strong>
                         <input type="hidden" value="<?php echo $node['position']; ?>" name="config[node][<?php echo $node_id; ?>][position]" class="form-node-position">
                         <input type="hidden" value="<?php echo $node['form']; ?>" name="config[node][<?php echo $node_id; ?>][form]">
-                        <button type="button" class="button button-small" data-form="<?php echo $node['form']; ?>" data-parent="<?php echo $node_id; ?>">
-                            <span class="dashicons dashicons-plus"></span>
-                        </button> - <span class="dashicons dashicons-no"></span>
+                        <button type="button" class="button button-small add-condition" data-form="<?php echo $node['form']; ?>" data-parent="<?php echo $node_id; ?>">
+                            <span class="dashicons dashicons-plus" style="font-size: 12px; line-height: 21px;"></span>
+                        </button>
+                        <button type="button" class="button button-small remove-node">
+                            <span class="dashicons dashicons-no" style="font-size: 12px; line-height: 21px;"></span>
+                        </button>
                         <?php if( !empty( $node['base'] ) ){ ?>
                             <input type="hidden" value="true" name="config[node][<?php echo $node_id; ?>][base]">
                         <?php }  ?>
@@ -59,7 +72,7 @@ if( !empty( $element['condition_points']['conditions'] ) ){
 
 
 jQuery( function( $ ){
-	$( document ).on('click', '.form-node > .button', function(){
+	$( document ).on('click', '.form-node > .add-condition', function(){
 		
         var id = 'end' + Math.round(Math.random() * 99866) + Math.round(Math.random() * 99866),
             endpoint = addPointHome( $(this).data('parent'), id ),
@@ -92,16 +105,15 @@ jQuery( function( $ ){
 
 	});
 
-    $( document ).on( 'click', '.dashicons-no', function(){
+    $( document ).on( 'click', '.remove-node', function(){
         var data = cf_get_base_form(),
-            db = $('#cf-conditions-db'),
             ids = removeNode( $( this ).closest('.form-node')[0] );
             if( ids.length ){
                 for( var i = 0; i < ids.length; i++ ){
                     delete data.conditions[ ids[i] ];
                 }
             }
-            db.val( JSON.stringify( data ) );
+            cf_save_points( data );
     });
 
 	$( document ).on('click', '.add-form-stage', function(){
@@ -168,6 +180,7 @@ data-target="#addEndpoint_baldrickModalBody"
     <input type="hidden" name="_open_condition" value="{{_open_condition}}">
     {{#find conditions @root/_open_condition}}
         <div class="caldera-editor-condition-config caldera-forms-condition-edit" style=" width:auto;">
+
             {{#if form}}
                 <input type="hidden" name="{{id}}[id]" value="{{id}}">
                 <input type="hidden" name="{{id}}[form]" id="condition-group-form-{{id}}" value="{{form}}">
@@ -175,13 +188,19 @@ data-target="#addEndpoint_baldrickModalBody"
                 <input type="hidden" name="{{id}}[parent]" value="{{parent}}">
                 <div class="condition-point-{{id}}" style="width: 550px; float: left;">
                     <div class="caldera-config-group">
-                        <label for="{{id}}_lable"><?php _e( 'Name', 'caldera-forms' ); ?></label>
+                        <label for="condition-group-name-{{id}}"><?php _e( 'Name', 'caldera-forms' ); ?></label>
                         <div class="caldera-config-field">
                             <input type="text" name="{{id}}[name]" id="condition-group-name-{{id}}" data-sync="#condition-group-{{id}}" value="{{#if name}}{{name}}{{else}}{{id}}{{/if}}" required class="required block-input">
                         </div>
                     </div>
-                    
-                    <div class="caldera-config-group">                      
+                    <div class="caldera-config-group">
+                        <label for="condition-group-back-button-{{id}}"><?php _e( 'Back Button', 'caldera-forms' ); ?></label>
+                        <div class="caldera-config-field">
+                            <label><input id="condition-group-back-button-{{id}}" type="checkbox" name="{{id}}[back]" value="true" {{#if back}}checked="checked"{{/if}}>  <?php echo __('Enable Back Navigation', 'cf-form-connector'); ?></label>
+                        </div>
+                    </div>                
+                    <div class="caldera-config-group">
+                        <label for="condition-group-name-{{id}}"><?php echo __('Conditions', 'caldera-forms'); ?></label>
                         <div class="caldera-config-field">
                             <input type="hidden" name="{{id}}[type]" value="use">
                             <button type="button" data-add-group="{{id}}" class="pull-right button button-small"><?php echo __('Add Conditional Line', 'caldera-forms'); ?></button>
@@ -261,18 +280,25 @@ data-target="#addEndpoint_baldrickModalBody"
 
 </script>
 <script type="text/javascript">
-	var cf_new_condition_line, cf_new_condition_group, cf_set_endpoint, cf_get_base_form, edit_node, remove_node;
+	var cf_new_condition_line, cf_new_condition_group, cf_set_endpoint, cf_get_base_form, edit_node, remove_node, cf_save_points;
 
 
 
 	jQuery( function( $ ){
 
+        cf_save_points = function( data, rebuild ){
+            var db = $('#cf-conditions-db') ;
+            db.val( JSON.stringify( data ) );
+            if( rebuild ){
+                db.trigger( 'rebuild-conditions' );
+            }
+        }
+
         remove_node = function( id ){
-            var data = cf_get_base_form(),
-                db = $('#cf-conditions-db');
+            var data = cf_get_base_form();
             delete data.conditions[id];
             data._open_condition = null;
-            db.val( JSON.stringify( data ) );            
+            cf_save_points( data );
         }
         edit_node = function( obj ){
 
@@ -312,7 +338,6 @@ data-target="#addEndpoint_baldrickModalBody"
 
 		cf_new_condition_group = function( obj ){
 			var data = cf_get_base_form(),
-				db = $('#cf-conditions-db'),
                 id = obj.trigger.data('id');
 
 			if( !data.conditions ){
@@ -328,22 +353,24 @@ data-target="#addEndpoint_baldrickModalBody"
 			};
 
 			data._open_condition = id;
-			db.val( JSON.stringify( data ) );
+			cf_save_points( data );
 
 			return data;
 		}
 
 		cf_set_endpoint = function( obj ){
-			var data = cf_get_base_form(),
-				db = $('#cf-conditions-db');
-                console.log( data );
-			db.val( JSON.stringify( data ) );
+			var data = cf_get_base_form();
+                
+                if( data._open_condition ){
+                    setConnectionLable( data.conditions[ data._open_condition ], obj );
+                }
+
+			cf_save_points( data );
 		}
 
 		$( document ).on('click', '[data-add-line]', function(){
 			var clicked = $( this ),
 				id = clicked.data('addLine'),
-				db = $('#cf-conditions-db'),
 				data = cf_get_base_form(),
 				pid = clicked.data('group'),
 				cid = 'cl' + Math.round(Math.random() * 99887766) + '' + Math.round(Math.random() * 99887766);
@@ -359,14 +386,13 @@ data-target="#addEndpoint_baldrickModalBody"
 			data.conditions[pid].group[id][cid] = {
 				parent		:	id
 			};
-			cf_get_base_form();
-			db.val( JSON.stringify( data ) ).trigger( 'rebuild-conditions' );
+			
+			cf_save_points( data, true );
 		});
 		
 		$( document ).on('click', '[data-add-group]', function(){
 			var clicked = $( this ),
 				pid = clicked.data('addGroup'),
-				db = $('#cf-conditions-db'),
 				data = cf_get_base_form(),
 				id = 'rw' + Math.round(Math.random() * 99887766) + '' + Math.round(Math.random() * 99887766),
 				cid = 'cl' + Math.round(Math.random() * 99887766) + '' + Math.round(Math.random() * 99887766);
@@ -383,46 +409,42 @@ data-target="#addEndpoint_baldrickModalBody"
 				parent		:	id
 			};
 
-			db.val( JSON.stringify( data ) ).trigger( 'rebuild-conditions' );
+			cf_save_points( data, true );
 		});
 		
 		cf_new_condition_point = function(){
 			var clicked = $( this ),
 				id = 'cp' + Math.round(Math.random() * 99887766) + '' + Math.round(Math.random() * 99887766),
-				db = $('#cf-conditions-db'),
 				data = cf_get_base_form();
 			
 			data._open_condition = id;
 
-			db.val( JSON.stringify( data ) ).trigger( 'rebuild-conditions' );
+			cf_save_points( data, true );
 			return data;
 		};
 
 		$( document ).on('change', '[data-live-sync]', function(){
 
-			var data = cf_get_base_form(),
-				db = $('#cf-conditions-db');
+			var data = cf_get_base_form();
 
-			db.val( JSON.stringify( data ) ).trigger( 'rebuild-conditions' );
+			cf_save_points( data, true );
 			
 		});
 		$( document ).on('click', '#tab_conditions', function(){
 
-			var data = cf_get_base_form(),
-				db = $('#cf-conditions-db');
+			var data = cf_get_base_form();
 
-			db.val( JSON.stringify( data ) ).trigger( 'rebuild-conditions' );
+			cf_save_points( data, true );
 			
 		});
 
 		$( document ).on('click', '[data-open-group]', function(){
 			var clicked = $( this ),
 				id = clicked.data('openGroup'),
-				db = $('#cf-conditions-db'),
 				data = cf_get_base_form();
 
 			data._open_condition = id;
-			db.val( JSON.stringify( data ) ).trigger( 'rebuild-conditions' );
+			cf_save_points( data, true );
 
 		});
 
@@ -432,10 +454,9 @@ data-target="#addEndpoint_baldrickModalBody"
 			
 			$('.condition-line-' + id).remove();
 
-			var db = $('#cf-conditions-db'),
-				data = cf_get_base_form();
+			var data = cf_get_base_form();
 
-			db.val( JSON.stringify( data ) ).trigger( 'rebuild-conditions' );
+			cf_save_points( data, true );
 		});
 
 		$( document ).on('click', '[data-remove-group]', function(){
@@ -450,12 +471,11 @@ data-target="#addEndpoint_baldrickModalBody"
 
 			$('.condition-point-' + id).remove();
 
-			var db = $('#cf-conditions-db'),
-				data = cf_get_base_form();
+			var data = cf_get_base_form();
 			
 			data._open_condition = '';
 
-			db.val( JSON.stringify( data ) ).trigger( 'rebuild-conditions' );
+			cf_save_points( data, true );
 		});
 
 		$( document ).on( 'keydown keyup keypress change', '[data-sync]', function( e ){
@@ -479,10 +499,9 @@ data-target="#addEndpoint_baldrickModalBody"
 				bind.val( '' );
 			}
 
-			var data = cf_get_base_form(),
-				db = $('#cf-conditions-db');
+			var data = cf_get_base_form();
 
-			db.val( JSON.stringify( data ) ).trigger( 'rebuild-conditions' );
+			cf_save_points( data, true );
 		});
         $( document ).on('mouseup', '.form-node', function(){            
             var node = jQuery( this ),

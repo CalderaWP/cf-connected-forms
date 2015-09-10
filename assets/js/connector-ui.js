@@ -18,7 +18,7 @@ function init_jsPlumb(){
             ConnectionOverlays: [
                 [ "Arrow", { location: 1, width: 10, length : 8 } ],
                 [ "Label", {
-                    location: 0.1,
+                    location: [0.5],
                     id: "label",
                     cssClass: "aLabel"
                 }]
@@ -38,7 +38,7 @@ function init_jsPlumb(){
             d.className = "window cf-node form-node";
             d.id = id;
             d.dataset.form = obj.trigger.data('form');
-            d.innerHTML = "<strong>" + obj.trigger.data('name') + "</strong><input type=\"hidden\" class=\"form-node-position\" name=\"config[node][" + id + "][position]\" value=\"\"><input type=\"hidden\" name=\"config[node][" + id + "][form]\" value=\"" + obj.trigger.data('form') + "\"><button data-parent=\"" + id + "\" data-form=\"" + obj.trigger.data('form') +"\" class=\"button button-small\" type=\"button\"><span class=\"dashicons dashicons-plus\"></span></button> - <span class=\"dashicons dashicons-no\"></span>";
+            d.innerHTML = "<strong>" + obj.trigger.data('name') + "</strong><input type=\"hidden\" class=\"form-node-position\" name=\"config[node][" + id + "][position]\" value=\"\"><input type=\"hidden\" name=\"config[node][" + id + "][form]\" value=\"" + obj.trigger.data('form') + "\"><button data-parent=\"" + id + "\" data-form=\"" + obj.trigger.data('form') +"\" class=\"button button-small add-condition\" type=\"button\"><span style=\"font-size: 12px; line-height: 21px;\" class=\"dashicons dashicons-plus\"></span></button> <button type=\"button\" class=\"button button-small remove-node\"><span style=\"font-size: 12px; line-height: 21px;\" class=\"dashicons dashicons-no\"></span></button>";
             d.style.left = "0px";
             d.style.top = "0px";
             instance.getContainer().appendChild(d);        
@@ -48,7 +48,7 @@ function init_jsPlumb(){
             	instance.addEndpoint(d, targetEndpoint, { anchor: 'Continuous' });
         	}else{
         		d.className = "window cf-node form-node start-point";
-                d.innerHTML += "<input type=\"hidden\" class=\"form-node-position\" name=\"config[node][" + id + "][base]\" value=\"true\">";
+                d.innerHTML += "<input type=\"hidden\" class=\"form-node-base\" name=\"config[node][" + id + "][base]\" value=\"true\">";
         	}
             instance.repaintEverything();
             instance.draggable(d);
@@ -134,37 +134,49 @@ function init_jsPlumb(){
                 //connection.getOverlay("label").setLabel( connection.sourceId.substring(15) + "-" + connection.targetId.substring(15) );
             };
 
+         setConnectionLable = function( data, obj ){
+            //console.log( obj.trigger.data('endpoint') );
+            //console.log( obj.parent );
+            //console.log( instance );
+            var endpoint = instance.getEndpoint( obj.trigger.data('endpoint') );
+            if( endpoint && endpoint.connections.length ){
+                endpoint.connections[0].getOverlay("label").setLabel( data.name );
+            }
+         }
+         var triggerEndpointEdit = function( endpoint, id ){
+            var trigger = jQuery('<a>', { 
+                'data-modal'        : 'addEndpoint',
+                'data-modal-title'  : 'Add Condition Point',
+                'data-template'     : '#conditions-tmpl',
+                'data-request'      : 'edit_node',
+                'data-modal-width'  : '580',
+                'data-modal-height' : '420',
+                'data-callback'     : 'baldrickTriggers',
+                'data-id'           :  endpoint.id,
+                'data-form'         :  jQuery(this).data('form'),
+                'data-modal-buttons' : "Close|" + JSON.stringify( {
+                    'data-modal-autoclose' : 'addEndpoint',
+                    'data-request'  :   'cf_set_endpoint',
+                    'data-endpoint'  :   id,
+                    'data-id'       :  jQuery(this).data('parent'),
+                    'class' : 'button-primary ajax-trigger'
+                } ) + ";Delete|" + JSON.stringify( {
+                    'data-modal-autoclose' : 'addEndpoint',
+                    'data-endpoint'     :  id,
+                    'data-request'  :   'deleteEndpoint',
+                    'data-id'           :  endpoint.id,
+                    'class' : 'button ajax-trigger'
+                } ) + "|button delete-endpoint"
+
+            }).baldrick().trigger('click');
+         }
          addPointHome = function( el, id, wait ){	
 
          	var endpoint = instance.addEndpoint( el, sourceEndpoint, { anchor: 'Continuous', uuid : id });
 
-            endpoint.bind("click", function(endpoint) {
-
-                    var trigger = jQuery('<a>', { 
-                        'data-modal'        : 'addEndpoint',
-                        'data-modal-title'  : 'Add Condition Point',
-                        'data-template'     : '#conditions-tmpl',
-                        'data-request'      : 'edit_node',
-                        'data-modal-width'  : '580',
-                        'data-modal-height' : '420',
-                        'data-callback'     : 'baldrickTriggers',
-                        'data-id'           :  endpoint.id,
-                        'data-form'         :  jQuery(this).data('form'),
-                        'data-modal-buttons' : "Close|" + JSON.stringify( {
-                            'data-modal-autoclose' : 'addEndpoint',
-                            'data-request'  :   'cf_set_endpoint',
-                            'data-id'       :  jQuery(this).data('parent'),
-                            'class' : 'button-primary ajax-trigger'
-                        } ) + ";Delete|" + JSON.stringify( {
-                            'data-modal-autoclose' : 'addEndpoint',
-                            'data-endpoint'     :  id,
-                            'data-request'  :   'deleteEndpoint',
-                            'data-id'           :  endpoint.id,
-                            'class' : 'button ajax-trigger'
-                        } ) + "|button delete-endpoint"
-
-                    }).baldrick().trigger('click');
-            });
+            endpoint.bind("click", function( endpoint ){                
+                triggerEndpointEdit( endpoint, id ) 
+            } );
             
             if( ! wait ){
          	  instance.repaintEverything();
@@ -179,6 +191,26 @@ function init_jsPlumb(){
         var initial_nodes = jsPlumb.getSelector(".cf-form-canvas .form-node");
         // suspend drawing and initialise.
         instance.batch(function () {
+
+            // listen for new connections; initialise them the same way we initialise the connections at startup.
+            instance.bind("connection", function (connInfo, originalEvent) {
+                //init(connInfo.connection);
+                var data = cf_get_base_form(),
+                    db = jQuery('#cf-conditions-db'),
+                    condition = data.conditions[ connInfo.sourceEndpoint.id ];
+                
+                data.conditions[ connInfo.sourceEndpoint.id ].connect = connInfo.target.id;
+                db.val( JSON.stringify( data ) );
+                connInfo.connection.getOverlay("label").setLabel( condition.name );
+            });
+
+            instance.bind('click', function( connection ){
+
+               if( connection.endpoints && connection.endpoints.length ){
+                    //connection.endpoints[0].trigger('click');
+                    connection.endpoints[0].fire('click', connection.endpoints[0] );
+                }
+            });
             
             instance.draggable( initial_nodes, { grid: [20, 20] });
             // do connections
@@ -192,8 +224,13 @@ function init_jsPlumb(){
                         conditions : {},
                         forms : data.forms
                     };
-
+                instance.setSuspendDrawing(true);
                 for( var n = 0; n < initial_connections.length; n++ ){
+
+                    if( ! initial_connections[n].dataset.src || ! initial_connections[n].dataset.to ){
+                        continue;
+                    }
+
                     var from = 'start' + Math.round(Math.random() * 99866) + Math.round(Math.random() * 99866);                
 
                     if( ! endpoints[ initial_connections[n].dataset.to ] ){
@@ -205,23 +242,17 @@ function init_jsPlumb(){
                     var endpoint = addPointHome( initial_connections[n].dataset.from, from, true );
                     data.conditions[ initial_connections[n].dataset.src ].id = endpoint.id;
                     new_db.conditions[ endpoint.id ] = data.conditions[ initial_connections[n].dataset.src ];
-                    instance.connect({uuids: [ from, endpoints[ initial_connections[n].dataset.to ] ], editable: true});    
+                    instance.connect({uuids: [ from, endpoints[ initial_connections[n].dataset.to ] ], editable: true}).getOverlay("label").setLabel( initial_connections[n].dataset.name );
+                    
                 }
 
                 db.val( JSON.stringify( new_db ) );
+                instance.setSuspendDrawing(false, true);
+                instance.repaintEverything();
+                instance.recalculateOffsets();
             }
 
-            // listen for new connections; initialise them the same way we initialise the connections at startup.
-            instance.bind("connection", function (connInfo, originalEvent) {
-                //init(connInfo.connection);
-                var data = cf_get_base_form(),
-                    db = jQuery('#cf-conditions-db'),
-                    condition = data.conditions[ connInfo.sourceEndpoint.id ];
-                
-                data.conditions[ connInfo.sourceEndpoint.id ].connect = connInfo.target.id;
-                db.val( JSON.stringify( data ) );
-                connInfo.connection.getOverlay("label").setLabel( condition.name );
-            });
+
 
         });
 

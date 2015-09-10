@@ -4,12 +4,14 @@
   color: #333;
   cursor: move;
   opacity: 0.6;
-  padding: 6px 14px;
+  padding: 10px 34px 10px 12px;
   position: absolute;
   text-align: center;
   transition: box-shadow 0.15s ease-in 0s;
   width: auto;
   z-index: 20;
+  white-space: nowrap;
+  box-shadow: -9px 0 0 #efefef inset;
 }
 .flowchart-form .window:hover {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -57,9 +59,11 @@
     display: inline-block;
 }
 
+.form-node.start-point:hover,
 .form-node.start-point{
-	box-shadow: 9px 0 0 #a3be5f inset;
+	box-shadow: 9px 0 0 #a3be5f inset,-9px 0 0 #efefef inset;
 	cursor: default;
+  padding: 10px 34px 10px 21px;
 }
 .delete-endpoint{
   float: left;
@@ -72,7 +76,16 @@ path, ._jsPlumb_endpoint {
 	position: relative;  
 }
 
-.cf-node .button {
-  margin: -1px -5px 0 5px;
-  padding: 3px 1px !important;
+#cf-forms-main .cf-node .button {
+  border-radius: 0;
+  height: 21px;
+  padding: 0;
+  position: absolute;
+  right: 6px;
+}
+#cf-forms-main .cf-node .button.add-condition {  
+  top: -1px;
+}
+#cf-forms-main .cf-node .button.remove-node {
+  bottom: -1px;
 }
