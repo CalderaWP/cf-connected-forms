@@ -508,43 +508,6 @@ function cf_form_connector_process( $config, $form ) {
 	$form['form_connection']['entry_id'] = Caldera_Forms::get_field_data( '_entry_id', $form );
 }
 
-/**
- * Change form to be rendered
- *
- * @since 0.1.0
- *
- * @uses "caldera_forms_render_get_form" filter
- *
- * @param array $form The form config
- *
- * @return array
- */
-function cf_form_connector_change_form( $form ) {
-	if (
-		isset( $_GET[ 'cf_con' ] )
-		&& isset( $_GET[ 'cf_con_form_id' ] )
-		&& isset( $_GET[ 'cf_con_nonce' ] )
-		&& $_GET[ 'cf_con' ]
-		&& wp_verify_nonce( $_GET[ 'cf_con_nonce' ], 'cf_con_nonce' )
-	) {
-		remove_filter( 'caldera_forms_render_get_form', 'cf_form_connector_change_form' );
-		$_form = Caldera_Forms::get_form( Caldera_Forms_Sanitize::sanitize( $_GET[ 'cf_con_form_id' ] ) );
-		if ( is_array( $_form ) ) {
-			if ( isset( $_GET[ 'cf_id' ] ) && 0 < absint( $_GET[ 'cf_id' ] ) ) {
-				add_filter( 'caldera_forms_render_entry_id', function( $entry_id ) {
-					return (int) $_GET[ 'cf_id' ];
-				} );
-			}
-			$form = $_form;
-		}
-
-
-
-	}
-
-	return $form;
-
-}
 
 
 /**
