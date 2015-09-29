@@ -6,7 +6,7 @@
  * @author    Josh Pollock <Josh@CalderaWP.com>
  * @license   GPL-2.0+
  * @link
- * @copyright 2015 Josh Pollock for CalderaWP
+ * @copyright 2015 David Cramer & Josh Pollock for CalderaWP
  */
 
 $forms = \Caldera_Forms::get_forms();

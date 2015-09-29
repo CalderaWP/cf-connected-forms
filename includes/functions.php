@@ -6,67 +6,100 @@
  * @author    Josh Pollock <Josh@CalderaWP.com>
  * @license   GPL-2.0+
  * @link
- * @copyright 2015 Josh Pollock for CalderaWP
+ * @copyright 2015 David Cramer & Josh Pollock for CalderaWP
  */
 
+/**
+ * Add our hooks
+ */
+add_filter( 'caldera_forms_render_entry_id', 'cf_form_connector_get_stage_state', 10, 2 );
 add_action( 'init', 'cf_form_connector_init_current_position' );
-
-		// add form type
-		add_action( 'caldera_forms_get_form_templates', function( $templates ){
-			$templates['cf_connected_form'] = array(
-				'name'		=>	'Connected Form',
-				'template'	=>	array(
-					'is_connected_form' => true
-				)
-			);
-			
-			return $templates;
-		}, 12);
-
-		// set new connected form type
-		add_filter( 'caldera_forms_create_form', function( $form ){
-			parse_str( $_POST['data'], $newform );
-			if( !empty( $newform['connected_form_primary'] ) ){
-				$form['is_connected_form'] = true;
-			}
-			return $form;
-		} );
-
-		// setup form tabs for connected form
-		add_filter( 'caldera_forms_get_panel_extensions', function( $panels ){
-			if( !empty( $_GET['edit'] ) ){
-				$form = \Caldera_Forms::get_form( $_GET['edit'] );
-				if( !empty( $form['is_connected_form'] ) ){
-
-					//  setup new panels for this type.
-					//var_dump( $panels );
-					//die;
-					//uneeded panels
-					unset( $panels['form_layout']['tabs']['pages'] );
-					unset( $panels['form_layout']['tabs']['conditions'] );
-					unset( $panels['form_layout']['tabs']['processors'] );
-					unset( $panels['form_layout']['tabs']['variables'] );
-					unset( $panels['form_layout']['tabs']['responsive'] );
-
-					$panels['form_layout']['tabs']['layout']['name'] = __( 'Connections', 'connected-forms' );
-					$panels['form_layout']['tabs']['layout']['label'] = __( 'Connected Forms Builder', 'connected-forms' );
-					$panels['form_layout']['tabs']['layout']['actions'] = array();
-					$panels['form_layout']['tabs']['layout']['side_panel'] = null;
-					$panels['form_layout']['tabs']['layout']['canvas'] = CF_FORM_CON_PATH . 'includes/templates/connection-builder.php';
-
-					// add script
-					wp_enqueue_script( 'jsplumb', CF_FORM_CON_URL . 'assets/js/jsPlumb-1.7.10-min.js', array(), CF_FORM_CON_VER );
-					wp_enqueue_script( 'connector-ui', CF_FORM_CON_URL . 'assets/js/connector-ui.js', array('jsplumb'), CF_FORM_CON_VER );
-					wp_enqueue_style( 'connector-ui', CF_FORM_CON_URL . 'assets/css/connector-ui.css', array(), CF_FORM_CON_VER );
-					
-				}
-			}
-			return $panels;
-		});
+add_filter( 'caldera_forms_get_form' ,'cf_form_connector_setup_processors_check');
+add_filter( 'caldera_forms_submit_get_form' ,'cf_form_connector_setup_processors');
+add_filter( 'caldera_forms_ajax_return', 'cf_form_connector_control_form_load', 10, 3 );
+add_action( 'caldera_forms_redirect', 'cf_form_connector_control_form_load_manual', 25, 3 );
+add_filter( 'caldera_forms_render_form_attributes', 'cf_form_connector_add_form_flag', 11, 2 );
 
 
+/**
+ * Set new connected form type as template
+ *
+ * @since 0.2.o
+ */
+add_action( 'caldera_forms_get_form_templates', function( $templates ){
+	$templates['cf_connected_form'] = array(
+		'name'		=>	'Connected Form',
+		'template'	=>	array(
+			'is_connected_form' => true
+		)
+	);
+
+	return $templates;
+}, 12);
+
+/**
+ * Setup connected form on create
+ *
+ * @since 0.2.0
+ */
+add_filter( 'caldera_forms_create_form', function( $form ){
+	parse_str( $_POST['data'], $newform );
+	if( ! empty( $newform['connected_form_primary'] ) ){
+		$form['is_connected_form'] = true;
+	}
+
+	return $form;
+
+} );
+
+/**
+ * Setup form tabs for connected form
+ *
+ * @since 0.2.0
+ */
+add_filter( 'caldera_forms_get_panel_extensions', function( $panels ){
+	if( !empty( $_GET['edit'] ) ){
+		$form = \Caldera_Forms::get_form( $_GET['edit'] );
+		if( !empty( $form['is_connected_form'] ) ){
+
+			//setup new panels for this type.
+			//uneeded panels
+			unset( $panels['form_layout']['tabs']['pages'] );
+			unset( $panels['form_layout']['tabs']['conditions'] );
+			unset( $panels['form_layout']['tabs']['processors'] );
+			unset( $panels['form_layout']['tabs']['variables'] );
+			unset( $panels['form_layout']['tabs']['responsive'] );
+
+			//add needed
+			$panels['form_layout']['tabs']['layout']['name'] = __( 'Connections', 'connected-forms' );
+			$panels['form_layout']['tabs']['layout']['label'] = __( 'Connected Forms Builder', 'connected-forms' );
+			$panels['form_layout']['tabs']['layout']['actions'] = array();
+			$panels['form_layout']['tabs']['layout']['side_panel'] = null;
+			$panels['form_layout']['tabs']['layout']['canvas'] = CF_FORM_CON_PATH . 'includes/templates/connection-builder.php';
+
+			// add scripts
+			wp_enqueue_script( 'jsplumb', CF_FORM_CON_URL . 'assets/js/jsPlumb-1.7.10-min.js', array(), CF_FORM_CON_VER );
+			wp_enqueue_script( 'connector-ui', CF_FORM_CON_URL . 'assets/js/connector-ui.js', array('jsplumb'), CF_FORM_CON_VER );
+			wp_enqueue_style( 'connector-ui', CF_FORM_CON_URL . 'assets/css/connector-ui.css', array(), CF_FORM_CON_VER );
+
+		}
+	}
+
+	return $panels;
+
+});
+
+/**
+ * Get base form for this connected form if is a connected form.
+ *
+ * @since 0.2.0
+ *
+ * @param array $form Form config
+ *
+ * @return bool
+ */
 function cf_form_connector_get_base_form( $form ){
-	if( !empty( $form['is_connected_form'] ) ){
+	if( ! empty( $form['is_connected_form'] ) ){
 		foreach( $form['node'] as $node_id => $form_node ){
 			if( !empty( $form_node['base'] ) ){
 				// setup the form processor bases
@@ -76,17 +109,38 @@ function cf_form_connector_get_base_form( $form ){
 	}
 	return false;
 }
+
+/**
+ * Verify this is the correct form
+ *
+ * @since 0.2.0
+ *
+ * @param array $form Form config
+ * @param string $id Form ID
+ *
+ * @return bool
+ */
 function cf_form_connector_verify_id( $form, $id ){
 	if( !empty( $form['is_connected_form'] ) ){
 		foreach( $form['node'] as $node_id => $form_node ){
-			if( !empty( $form_node['form'] ) && $form_node['form'] == $id ){
+			if( ! empty( $form_node['form'] ) && $form_node['form'] == $id ){
 				return true; // yup its there
 			}
+
 		}
+
 	}
+
 	return false;
 }
 
+/**
+ * Ensure we are at right place in sequence
+ *
+ * @uses "init"
+ *
+ * @since 0.2.0
+ */
 function cf_form_connector_init_current_position(){
 	if( is_user_logged_in() ){
 		if( isset( $_COOKIE['cfcfrm_usr'] ) ){
@@ -103,6 +157,14 @@ function cf_form_connector_init_current_position(){
 		}
 	}
 }
+
+/**
+ * Detemrine correct place in sequence
+ *
+ * @since 0.2.0
+ *
+ * @return array|mixed|void
+ */
 function cf_form_connector_get_current_position(){
 		if(is_user_logged_in()){
 			$user_id = get_current_user_id();
@@ -120,6 +182,14 @@ function cf_form_connector_get_current_position(){
 		}
 	return $data;
 }
+
+/**
+ * Set current place in the sequence
+ *
+ * @since 0.2.0
+ *
+ * @param array $data
+ */
 function cf_form_connector_set_current_position( $data ){
 		if(is_user_logged_in()){
 			$user_id = get_current_user_id();
@@ -133,6 +203,18 @@ function cf_form_connector_set_current_position( $data ){
 		}
 }
 
+/**
+ * Get the current state for this stage in process
+ *
+ * @since 0.2.0
+ *
+ * @uses "caldera_forms_render_entry_id"
+ *
+ * @param int $entry_id ID of entry
+ * @param array $form The form configuration
+ *
+ * @return mixed
+ */
 function cf_form_connector_get_stage_state( $entry_id, $form ){
 	
 	$process_record = cf_form_connector_get_current_position();
@@ -141,6 +223,7 @@ function cf_form_connector_get_stage_state( $entry_id, $form ){
 		if( !empty( $process_record[ $form['ID'] ][ $form['current_form'] ] ) && !empty( $process_record[ $form['ID'] ][ $form['current_form'] ]['id'] ) ){
 			if( is_user_logged_in() ){
 				return $process_record[ $form['ID'] ][ $form['current_form'] ]['id'];
+
 			}else{
 				// no permission, simulate with prepopulate			
 				$entry = Caldera_Forms::get_entry( $process_record[ $form['ID'] ][ $form['current_form'] ]['id'], $form['current_form'] );
@@ -150,22 +233,37 @@ function cf_form_connector_get_stage_state( $entry_id, $form ){
 					}
 					cf_form_connector_set_current_position( $process_record );
 				}
+
 				add_filter( 'caldera_forms_render_pre_get_entry', 'cf_form_connector_partial_populate_form', 10, 2 );
 			}
+
 		}
+
 	}
 
 	return $entry_id;
+
 }
 
-add_filter( 'caldera_forms_render_entry_id', 'cf_form_connector_get_stage_state', 10, 2 );
-
+/**
+ * Setup processors on the connected form
+ *
+ * @since 0.2.0
+ *
+ * @uses "caldera_forms_submit_get_form"
+ *
+ * @param array $form The form configuration
+ *
+ * @return array|null
+ */
 function cf_form_connector_setup_processors( $form ){
 
 	if( empty( $form['is_connected_form'] ) ){
 		return $form;
+
 	}
-	// ftch the connected stage form
+
+	// fetch the connected stage form
 	$base_form = Caldera_Forms::get_form( cf_form_connector_get_base_form( $form ) );
 	if( !empty( $_POST['cffld_stage'] ) ){
 		$current_form = Caldera_Forms_Sanitize::sanitize( $_POST['cffld_stage'] );
@@ -218,8 +316,7 @@ function cf_form_connector_setup_processors( $form ){
 			}
 			
 		}
-	//	var_dump( $current_form );
-	//	die;
+
 	}
 
 	$form['stage_form'] = $stage['ID'];
@@ -261,21 +358,23 @@ function cf_form_connector_setup_processors( $form ){
 	// setup each connection condition
 	$final_form_fields = array();
 	foreach( $stage['condition_points']['conditions'] as $condition_point => $condition ){
-		//$final_form_fields = a
 		// ye, lets only use the conditions for this form
 		if( $condition['form'] != $form['ID'] ){
 			continue;
 		}
+
 		// check its there
 		if( empty( $stage['node'][ $condition['connect'] ] ) ){
 			continue;
 		}
+
 		// create a processor IF
 		$processor_id = 'cfp_' . $stage['ID'] . '_' . $condition_point;
 		$hasBack = false;
 		if( !empty( $condition['back'] ) ){
 			$hasBack = true;
 		}
+
 		$form['processors'][ $processor_id ] = array(
 			'ID' 			=> $processor_id,
 			'type' 			=> 'form-connector',
@@ -316,8 +415,20 @@ function cf_form_connector_setup_processors( $form ){
 	}
 
 	return $form;
+
 }
 
+/**
+ * Check the processors in connected forms
+ *
+ * @since 0.2.0
+ *
+ * @uses "caldera_forms_get_form"
+ *
+ * @param array $form The form configuration
+ *
+ * @return mixed
+ */
 function cf_form_connector_setup_processors_check( $form ){
 	if( is_admin() && !empty( $form['is_connected_form'] ) ){
 		// setup processors
@@ -325,6 +436,7 @@ function cf_form_connector_setup_processors_check( $form ){
 			'type'	=> 'form-connector',
 			'config' => array()
 		);
+
 		// setup fields
 		$form_fields = array();
 		if( !empty( $_POST['action'] ) && $_POST['action'] == 'get_entry' && !empty( $_POST['entry'] ) ){
@@ -345,13 +457,28 @@ function cf_form_connector_setup_processors_check( $form ){
 					$form['fields'] = array_merge( $form['fields'], $connected_form['fields'] );
 				}
 			}
+
 			// filter the meta to include the connected meta stuff.
 			add_filter( 'caldera_forms_get_entry_detail', 'cf_form_connector_setup_processors_meta', 10, 3 );
 		}
+
 	}
+
 	return $form;
 }
 
+
+/**
+ * Handle meta in processors of connected forms
+ *
+ * @since 0.2.0
+ *
+ * @param array $entry Entry data
+ * @param int $entry_id Entry ID
+ * @param array $form The form configuration
+ *
+ * @return mixed
+ */
 function cf_form_connector_setup_processors_meta( $entry, $entry_id, $form ){
 
 	if( !empty( $entry['meta']['form-connector']['data']['_connected_form']['entry']['form']['meta_value'] ) ){
@@ -367,15 +494,21 @@ function cf_form_connector_setup_processors_meta( $entry, $entry_id, $form ){
 		}
 		unset( $entry['meta']['form-connector'] );
 	}
+
 	return $entry;
 }
 
-add_filter( 'caldera_forms_get_form' ,'cf_form_connector_setup_processors_check');
-add_filter( 'caldera_forms_submit_get_form' ,'cf_form_connector_setup_processors');
-add_filter( 'caldera_forms_ajax_return', 'cf_form_connector_control_form_load', 10, 3 );
-add_action( 'caldera_forms_redirect', 'cf_form_connector_control_form_load_manual', 25, 3 );
 
-function cf_form_connector_control_form_load_manual($type, $url, $form){
+/**
+ * Load connected forms within sequences
+ *
+ * @uses "caldera_forms_redirect"
+ *
+ * @param string $type Unused
+ * @param string $url Unused
+ * @param array $form The form configuration
+ */
+function cf_form_connector_control_form_load_manual($type, $url, $form ){
 
 	if( !empty( $form['stage_form'] ) ){
 		$stage_form = Caldera_Forms::get_form( $form['stage_form'] );
@@ -396,6 +529,18 @@ function cf_form_connector_control_form_load_manual($type, $url, $form){
 	}
 }
 
+/**
+ * Do something to loading of forms
+ *
+ * @since 0.2.0
+ *
+ * @uses "caldera_forms_ajax_return"
+ *
+ * @param string $out
+ * @param array $form The form configuration
+ *
+ * @return mixed
+ */
 function cf_form_connector_control_form_load( $out, $form ){
 	
 	if( $out['type'] !== 'complete' ){
@@ -463,6 +608,7 @@ function cf_form_connector_control_form_load( $out, $form ){
 	}
 
 	return $out;
+
 }
 
 function cf_form_connector_partial_populate_form( $data, $form ){
@@ -614,11 +760,22 @@ add_filter( 'caldera_forms_render_get_form', function( $form ){
 	return $form;
 } );
 
-add_filter( 'caldera_forms_render_form_attributes', 'cf_form_connector_add_form_flag', 11, 2 );
+/**
+ * Setup form attributes to mark as a connected form.
+ *
+ * @since 0.2.0
+ *
+ * @uses "caldera_forms_render_form_attributes"
+ *
+ * @param array $atts
+
+ * @param array $form The form config
+ *
+ * @return mixed
+ */
 function cf_form_connector_add_form_flag( $atts, $form ){
 	if( !empty( $form['connected_stage'] ) ){
-		// additionals like target :)
-		//$atts['data-stage-target'] = '#' . $atts['id'];
+
 		//$atts['data-target-insert'] = 'replace';
 	};
 
@@ -637,11 +794,12 @@ function cf_form_connector_register($processors){
 	if( is_admin() && !empty( $_GET['edit'] ) ){
 		return $processors;
 	}
+
 	$processors['form-connector'] = array(
 		"name"				=>	__('Connected Forms', 'cf-form-connector'),
 		"description"		=>	__( 'Connect multiple forms.', 'cf-form-connector'),
 		//"icon"				=>	CF_FORM_CON_URL . "icon.png",
-		"author"			=>	"Josh Pollock for CalderaWP LLC",
+		"author"			=>	"David Cramer & Josh Pollock for CalderaWP LLC",
 		"author_url"		=>	"https://CalderaWP.com",
 		"post_processor"	=>	'cf_form_connector_process',
 		"template"			=>	CF_FORM_CON_PATH . "includes/config.php",
@@ -653,7 +811,7 @@ function cf_form_connector_register($processors){
 }
 
 /**
- * Proccess submission
+ * Proccesss submission
  *
  * @since 0.1.0
  *
@@ -710,7 +868,7 @@ function cf_form_connector_change_form( $form ) {
 /**
  * Register the nav fields
  *
- * @since 1.0.0
+ * @since 0.2.0
  *
  *
  * @param array 	$fieldtypes		list of currently registered field types
@@ -744,6 +902,7 @@ function cf_form_connector_register_fields($fieldtypes){
 				'entry_list'
 			)
 		)
-	);	
+	);
+
 	return $fieldtypes;
 }
