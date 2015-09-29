@@ -30,11 +30,9 @@ define( 'CF_FORM_CON_URL',  plugin_dir_url( __FILE__ ) );
 define( 'CF_FORM_CON_SLUG', '_users_connected_forms_dev' );
 define( 'CF_FORM_CON_VER', '0.1.0' );
 
+// dont allow it in editor
 // add filter to register addon with Caldera Forms
 add_filter('caldera_forms_get_form_processors', 'cf_form_connector_register');
-
-//add filter to change form when needed
-//add_filter( 'caldera_forms_render_get_form', 'cf_form_connector_change_form' );
 
 // pull in the functions file
 include CF_FORM_CON_PATH . 'includes/functions.php';

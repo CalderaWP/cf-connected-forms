@@ -30,7 +30,9 @@ if( !empty( $element['condition_points']['conditions'] ) ){
 }
 ?>
 
+<span style="display:none;" class="preview-caldera-config-group"><button type="submit"></button></span>
 <input type="hidden" name="config[is_connected_form]" value="true">
+<input type="hidden" name="config[fields][]" value="true">
 <input type="hidden" id="forms-db" value="<?php echo esc_attr( json_encode( $forms ) ); ?>">
 
 		<button type="button" class="button add-form-stage">Add Form</button>
