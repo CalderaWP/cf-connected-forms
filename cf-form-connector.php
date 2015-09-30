@@ -10,7 +10,7 @@
  * Plugin Name: Caldera Forms Connector
  * Plugin URI:  https://calderawp.com/downloads/caldera-forms-connector
  * Description: Connect multiple Caldera Forms into a sequence of forms
- * Version: 0.1.0
+ * Version: 0.2.0
  * Author:      Josh Pollock & David Cramer <Calderasaurus@CalderaWP.com>
  * Author URI:  http://calderawp.com
  * Text Domain: cf-form-connector
@@ -28,7 +28,7 @@ if ( ! defined( 'WPINC' ) ) {
 define( 'CF_FORM_CON_PATH',  plugin_dir_path( __FILE__ ) );
 define( 'CF_FORM_CON_URL',  plugin_dir_url( __FILE__ ) );
 define( 'CF_FORM_CON_SLUG', '_users_connected_forms_dev' );
-define( 'CF_FORM_CON_VER', '0.1.0' );
+define( 'CF_FORM_CON_VER', '0.2.0' );
 
 // dont allow it in editor
 // add filter to register addon with Caldera Forms
