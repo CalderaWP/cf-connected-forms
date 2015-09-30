@@ -24,11 +24,11 @@ add_filter( 'caldera_forms_render_form_attributes', 'cf_form_connector_add_form_
 /**
  * Set new connected form type as template
  *
- * @since 0.2.o
+ * @since 0.2.0
  */
 add_action( 'caldera_forms_get_form_templates', function( $templates ){
 	$templates['cf_connected_form'] = array(
-		'name'		=>	'Connected Form',
+		'name'		=> __( 'Connected Form', 'cf-connected-forms' ),
 		'template'	=>	array(
 			'is_connected_form' => true
 		)
