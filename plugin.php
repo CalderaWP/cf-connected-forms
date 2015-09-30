@@ -35,7 +35,7 @@ define( 'CF_FORM_CON_VER', '0.2.0' );
 add_filter('caldera_forms_get_form_processors', 'cf_form_connector_register');
 
 // pull in the functions file
-include CF_FORM_CON_PATH . 'includes/functions.php';
+include trailingslashit( CF_FORM_CON_PATH ) . 'includes/functions.php';
 
 
 
