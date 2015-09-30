@@ -209,8 +209,7 @@ data-target="#addEndpoint_baldrickModalBody"
                     </div>                
                     <div class="caldera-config-group">
                         <label for="condition-group-name-{{id}}">
-                            <?php echo __('Conditions', 'cf-form-connector'); ?><
-                            /label>
+                            <?php echo __('Conditions', 'cf-form-connector'); ?></label>
                         <div class="caldera-config-field">
                             <input type="hidden" name="{{id}}[type]" value="use">
                             <button type="button" data-add-group="{{id}}" class="pull-right button button-small">
