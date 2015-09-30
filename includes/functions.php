@@ -145,7 +145,7 @@ function cf_form_connector_init_current_position(){
 	if( is_user_logged_in() ){
 		if( isset( $_COOKIE['cfcfrm_usr'] ) ){
 			// kill it
-			$process_record = get_option( $_COOKIE['cfcfrm_usr'], array() );
+			$process_record = get_option( 'cfcfrm_' . $_COOKIE['cfcfrm_usr'], array() );
 			cf_form_connector_set_current_position( $process_record );
 			setcookie('cfcfrm_usr', null, time() - 3600, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true);
 		}
@@ -175,7 +175,7 @@ function cf_form_connector_get_current_position(){
 			// alternate method
 			if( !empty( $_COOKIE['cfcfrm_usr'] ) ){
 				$user_id = $_COOKIE['cfcfrm_usr'];
-				$data = get_option( $user_id, array() );
+				$data = get_option( 'cfcfrm_' .  $user_id, array() );
 			}else{
 				$data = array();
 			}
@@ -197,7 +197,7 @@ function cf_form_connector_set_current_position( $data ){
 		}else{
 			// alternate method
 			if( !empty( $_COOKIE['cfcfrm_usr'] ) ){
-				$user_id = $_COOKIE['cfcfrm_usr'];
+				$user_id = 'cfcfrm_' .  $_COOKIE['cfcfrm_usr'];
 				update_option( $user_id, $data );
 			}
 		}
