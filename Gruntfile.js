@@ -86,7 +86,7 @@ module.exports = function (grunt) {
                     allowEmpty: true
                 },
                 files: {
-                    src: [ 'package.json', 'readme.txt', 'cf-form-connector.php', 'releases/<%= pkg.name %>-<%= pkg.version %>.zip' ]
+                    src: [ 'package.json', 'readme.txt', 'plugin.php', 'releases/<%= pkg.name %>-<%= pkg.version %>.zip' ]
                 }
             }
         },
