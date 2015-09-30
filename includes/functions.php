@@ -636,7 +636,7 @@ add_filter( 'caldera_forms_render_get_form', function( $form ){
 		if(!empty( $process_record[ $form['ID'] ] ) && false === $process_record[ $form['ID'] ]['completed'] ){
 			if( !empty( $process_record[ $form['ID'] ]['previous_form'] ) ){
 				$previous_form = $process_record[ $form['ID'] ]['previous_form'];
-				if( !empty( $process_record[ $form['ID'] ][ $process_record[ $form['ID'] ]['previous_form'] ] && !empty( $process_record[ $form['ID'] ][ $process_record[ $form['ID'] ]['previous_form'] ]['no_back'] ) ) ){
+				if( !empty( $process_record[ $form['ID'] ][ $process_record[ $form['ID'] ]['previous_form'] ] ) && !empty( $process_record[ $form['ID'] ][ $process_record[ $form['ID'] ]['previous_form'] ]['no_back'] ) ){
 					$no_back_button = true;
 				}
 			}
