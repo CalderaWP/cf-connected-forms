@@ -2,12 +2,14 @@
 /**
  * Form Connector Config template
  *
- * @package   Caldera_Forms_Connector
+ * @package   CF_Connected_Forms
  * @author    Josh Pollock <Josh@CalderaWP.com>
  * @license   GPL-2.0+
  * @link
- * @copyright 2015 Josh Pollock for CalderaWP
+ * @copyright 2015 David Cramer & Josh Pollock for CalderaWP
  */
+
+$forms = \Caldera_Forms::get_forms();
 
 ?>
 
@@ -28,11 +30,17 @@
 		<?php _e( 'Next Form ID', 'cf-form-connector' ); ?>
 	</label>
 	<div class="caldera-config-field">
-		<input type="text" class="block-input field-config magic-tag-enabled" id="next_form_id" name="{{_name}}[next_form_id]" value="{{next_form_id}}" >
+		<select name="{{_name}}[next_form_id]" class="block-input field-config">
+		<?php foreach( $forms as $form_id => $form ){
+			if( $form_id == $element['ID'] ){ continue; }
+			?>
+			<option value="<?php echo $form_id; ?>" {{#is next_form_id value="<?php echo $form_id; ?>"}}selected="selected"{{/is}}><?php echo $form['name']; ?></option>
+		<?php } ?>
+		</select>
+		<p class="description">
+			<?php _e( 'Select the next form.', 'cf-form-connector' ); ?>
+		</p>
 	</div>
-	<p class="description">
-		<?php _e( 'Enter the ID of the next form.', 'cf-form-connector' ); ?>
-	</p>
 </div>
 
 <div class="caldera-config-group">
@@ -64,11 +72,18 @@
 		<?php _e( 'Previous Form ID', 'cf-form-connector' ); ?>
 	</label>
 	<div class="caldera-config-field">
-		<input type="text" class="block-input field-config magic-tag-enabled" id="previous_form_id" name="{{_name}}[previous_form_id]" value="{{previous_form_id}}" >
+		<select name="{{_name}}[next_form_id]" class="block-input field-config">
+		<?php foreach( $forms as $form_id => $form ){
+			if( $form_id == $element['ID'] ){ continue; }
+			?>
+			{{#is next_form_id not="<?php echo $form_id; ?>"}}<option value="<?php echo $form_id; ?>" {{#is next_form_id value="<?php echo $form_id; ?>"}}selected="selected"{{/is}}><?php echo $form['name']; ?></option>{{/is}}
+		<?php } ?>
+		</select>
+		<p class="description">
+			<?php _e( 'Enter the ID of the previous form.', 'cf-form-connector' ); ?>
+		</p>
 	</div>
-	<p class="description">
-		<?php _e( 'Enter the ID of the previous form.', 'cf-form-connector' ); ?>
-	</p>
+
 </div>
 
 <div class="caldera-config-group">

@@ -1,0 +1,1 @@
+<?php echo $wrapper_before; ?><?php echo $field_before; ?><input data-field="<?php echo $field_base_id; ?>_btn" class="<?php echo $field['config']['class']; ?>" type="submit" name="<?php echo $field_name; ?>_btn" value="<?php echo esc_attr( $field['label'] ); ?>" id="<?php echo $field_id; ?>"><?php echo $field_after; ?><?php echo $wrapper_after; ?>
