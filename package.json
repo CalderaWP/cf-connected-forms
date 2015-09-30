@@ -4,12 +4,12 @@
   "description": "Mailchimp integration for Caldera Forms",
   "repository": {
     "type": "git",
-    "url": "https://bitbucket.org/calderadev/cf-form-connector"
+    "url": "https://github.com/CalderaWP/cf-connected-forms"
   },
   "author": "CalderaWP",
   "license": "GPLv2+",
   "bugs": {
-    "url": "https://bitbucket.org/calderadev/cf-form-connector"
+    "url": "https://github.com/CalderaWP/cf-connected-forms/issues"
   },
   "devDependencies": {
     "grunt": "~0.4.2",
