@@ -2,7 +2,7 @@
 /**
  * CF Form Connector functions
  *
- * @package   Caldera_Forms_Connector
+ * @package   CF_Connected_Forms
  * @author    Josh Pollock <Josh@CalderaWP.com>
  * @license   GPL-2.0+
  * @link

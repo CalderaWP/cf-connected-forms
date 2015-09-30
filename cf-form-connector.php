@@ -1,13 +1,13 @@
 <?php
 /**
- * @package   Caldera_Forms_Connector
+ * @package   CF_Connected_Forms
  * @author    Josh Pollock <Josh@CalderaWP.com>
  * @license   GPL-2.0+
  * @link
  * @copyright 2015 David Cramer & Josh Pollock for CalderaWP
  *
  * @wordpress-plugin
- * Plugin Name: Caldera Forms Connector
+ * Plugin Name: Connected Caldera Forms
  * Plugin URI:  https://calderawp.com/downloads/caldera-forms-connector
  * Description: Connect multiple Caldera Forms into a sequence of forms
  * Version: 0.2.0
