@@ -1,6 +1,6 @@
 {
   "name": "cf-connected-forms",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Mailchimp integration for Caldera Forms",
   "repository": {
     "type": "git",
