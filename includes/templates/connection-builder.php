@@ -173,7 +173,7 @@ data-template="#conditions-tmpl"
 data-target="#addEndpoint_baldrickModalBody"
 >
 <script type="text/html" id="add-endpoint-tmpl">
-<button style="width:250px;" class="button ajax-trigger" data-request="cf_new_condition_group" data-template="#conditions-tmpl" data-target="#caldera-forms-conditions-panel" type="button"><?php _e( 'Add Condition', 'caldera-forms' ); ?></button>
+<button style="width:250px;" class="button ajax-trigger" data-request="cf_new_condition_group" data-template="#conditions-tmpl" data-target="#cf-form-connector-conditions-panel" type="button"><?php _e( 'Add Condition', 'caldera-forms' ); ?></button>
 
 <div id="caldera-forms-connect-conditions-panel"></div>
 </script>
@@ -190,27 +190,27 @@ data-target="#addEndpoint_baldrickModalBody"
                 <input type="hidden" name="{{id}}[parent]" value="{{parent}}">
                 <div class="condition-point-{{id}}" style="width: 550px; float: left;">
                     <div class="caldera-config-group">
-                        <label for="condition-group-name-{{id}}"><?php _e( 'Name', 'caldera-forms' ); ?></label>
+                        <label for="condition-group-name-{{id}}"><?php _e( 'Name', 'cf-form-connector' ); ?></label>
                         <div class="caldera-config-field">
                             <input type="text" name="{{id}}[name]" id="condition-group-name-{{id}}" data-sync="#condition-group-{{id}}" value="{{#if name}}{{name}}{{else}}{{id}}{{/if}}" required class="required block-input">
                         </div>
                     </div>
                     <div class="caldera-config-group">
-                        <label for="condition-group-back-button-{{id}}"><?php _e( 'Back Button', 'caldera-forms' ); ?></label>
+                        <label for="condition-group-back-button-{{id}}"><?php _e( 'Back Button', 'cf-form-connector' ); ?></label>
                         <div class="caldera-config-field">
                             <label><input id="condition-group-back-button-{{id}}" type="checkbox" name="{{id}}[back]" value="true" {{#if back}}checked="checked"{{/if}}>  <?php echo __('Enable Back Navigation', 'cf-form-connector'); ?></label>
                         </div>
                     </div>                
                     <div class="caldera-config-group">
-                        <label for="condition-group-name-{{id}}"><?php echo __('Conditions', 'caldera-forms'); ?></label>
+                        <label for="condition-group-name-{{id}}"><?php echo __('Conditions', 'cf-form-connector'); ?></label>
                         <div class="caldera-config-field">
                             <input type="hidden" name="{{id}}[type]" value="use">
-                            <button type="button" data-add-group="{{id}}" class="pull-right button button-small"><?php echo __('Add Conditional', 'caldera-forms'); ?></button>
+                            <button type="button" data-add-group="{{id}}" class="pull-right button button-small"><?php echo __('Add Conditional', 'cf-form-connector'); ?></button>
                         </div>
                     </div>
                     {{#each group}}
                         {{#unless @first}}
-                            <span style="display: block; margin: 0px 0px 8px;"><?php _e( 'or', 'caldera-forms' ); ?></span>
+                            <span style="display: block; margin: 0px 0px 8px;"><?php _e( 'or', 'cf-form-connector' ); ?></span>
                         {{/unless}}
                         <div class="caldera-condition-group caldera-condition-lines">
                         {{#each this}}
@@ -218,9 +218,9 @@ data-target="#addEndpoint_baldrickModalBody"
                             <div class="caldera-condition-line condition-line-{{@key}}">
                                 <input type="hidden" name="{{../../../id}}[group][{{parent}}][{{@key}}][parent]" value="{{parent}}">
                                 <span style="display:inline-block;">{{#if @first}}
-                                    <?php _e( 'if', 'caldera-forms' ); ?>
+                                    <?php _e( 'if', 'cf-form-connector' ); ?>
                                 {{else}}
-                                    <?php _e( 'and', 'caldera-forms' ); ?>
+                                    <?php _e( 'and', 'cf-form-connector' ); ?>
                                 {{/if}}</span>
                                 <input type="hidden" name="{{../../../id}}[fields][{{@key}}]" value="{{field}}" id="condition-bound-field-{{@key}}" data-live-sync="true">
                                 <select style="max-width:120px;vertical-align: inherit;" name="{{../../id}}[group][{{parent}}][{{@key}}][field]" data-sync="#condition-bound-field-{{@key}}">
@@ -239,13 +239,13 @@ data-target="#addEndpoint_baldrickModalBody"
                                     </optgroup>*/ ?>
                                 </select>
                                 <select style="max-width:110px;vertical-align: inherit;" name="{{../../id}}[group][{{parent}}][{{@key}}][compare]">
-                                    <option value="is" {{#is compare value="is"}}selected="selected"{{/is}}><?php _e( 'is', 'caldera-forms' ); ?>{{../compare}}</option>
-                                    <option value="isnot" {{#is compare value="isnot"}}selected="selected"{{/is}}><?php _e( 'is not', 'caldera-forms' ); ?></option>
-                                    <option value="isgreater" {{#is compare value="isgreater"}}selected="selected"{{/is}}><?php _e( 'is greater than', 'caldera-forms' ); ?></option>
-                                    <option value="issmaller" {{#is compare value="issmaller"}}selected="selected"{{/is}}><?php _e( 'is less than', 'caldera-forms' ); ?></option>
-                                    <option value="startswith" {{#is compare value="startswith"}}selected="selected"{{/is}}><?php _e( 'starts with', 'caldera-forms' ); ?></option>
-                                    <option value="endswith" {{#is compare value="endswith"}}selected="selected"{{/is}}><?php _e( 'ends with', 'caldera-forms' ); ?></option>
-                                    <option value="contains" {{#is compare value="contains"}}selected="selected"{{/is}}><?php _e( 'contains', 'caldera-forms' ); ?></option>
+                                    <option value="is" {{#is compare value="is"}}selected="selected"{{/is}}><?php _e( 'is', 'cf-form-connector' ); ?>{{../compare}}</option>
+                                    <option value="isnot" {{#is compare value="isnot"}}selected="selected"{{/is}}><?php _e( 'is not', 'cf-form-connector' ); ?></option>
+                                    <option value="isgreater" {{#is compare value="isgreater"}}selected="selected"{{/is}}><?php _e( 'is greater than', 'cf-form-connector' ); ?></option>
+                                    <option value="issmaller" {{#is compare value="issmaller"}}selected="selected"{{/is}}><?php _e( 'is less than', 'cf-form-connector' ); ?></option>
+                                    <option value="startswith" {{#is compare value="startswith"}}selected="selected"{{/is}}><?php _e( 'starts with', 'cf-form-connector' ); ?></option>
+                                    <option value="endswith" {{#is compare value="endswith"}}selected="selected"{{/is}}><?php _e( 'ends with', 'cf-form-connector' ); ?></option>
+                                    <option value="contains" {{#is compare value="contains"}}selected="selected"{{/is}}><?php _e( 'contains', 'cf-form-connector' ); ?></option>
                                 </select>
                                 <span data-value="" class="caldera-conditional-field-value" style="padding: 0 12px 0; display:inline-block; width:200px;">
 
@@ -269,7 +269,7 @@ data-target="#addEndpoint_baldrickModalBody"
                                 <button class="button pull-right" data-remove-line="{{@key}}" type="button"><i class="icon-join"></i></button>
                             </div>
                         {{/each}}
-                        <div style="margin: 12px 0 0;"><button class="button button-small" data-add-line="{{@key}}" data-group="{{../id}}" type="button"><?php _e( 'Add Condition', 'caldera-forms' ); ?></button></div>
+                        <div style="margin: 12px 0 0;"><button class="button button-small" data-add-line="{{@key}}" data-group="{{../id}}" type="button"><?php _e( 'Add Condition', 'cf-form-connector' ); ?></button></div>
                         </div>
                     {{/each}}
 
