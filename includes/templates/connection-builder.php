@@ -205,7 +205,7 @@ data-target="#addEndpoint_baldrickModalBody"
                         <label for="condition-group-name-{{id}}"><?php echo __('Conditions', 'caldera-forms'); ?></label>
                         <div class="caldera-config-field">
                             <input type="hidden" name="{{id}}[type]" value="use">
-                            <button type="button" data-add-group="{{id}}" class="pull-right button button-small"><?php echo __('Add Conditional Line', 'caldera-forms'); ?></button>
+                            <button type="button" data-add-group="{{id}}" class="pull-right button button-small"><?php echo __('Add Conditional', 'caldera-forms'); ?></button>
                         </div>
                     </div>
                     {{#each group}}
