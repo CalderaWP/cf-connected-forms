@@ -30,12 +30,31 @@ define( 'CF_FORM_CON_URL',  plugin_dir_url( __FILE__ ) );
 define( 'CF_FORM_CON_SLUG', '_users_connected_forms_dev' );
 define( 'CF_FORM_CON_VER', '0.2.0' );
 
-// dont allow it in editor
-// add filter to register addon with Caldera Forms
-add_filter('caldera_forms_get_form_processors', 'cf_form_connector_register');
 
-// pull in the functions file
-include trailingslashit( CF_FORM_CON_PATH ) . 'includes/functions.php';
+// Load instance
+add_action( 'plugins_loaded', 'cf_form_connector_init', 1 );
+function cf_form_connector_init(){
+	if (  ! version_compare( PHP_VERSION, '5.3.0', '>=' ) ) {
+		if ( is_admin() || defined( 'DOING_AJAX' ) && DOING_AJAX ) {
+			include_once CF_FORM_CON_PATH . 'vendor/calderawp/dismissible-notice/src/functions.php';
+		}
+
+		if ( is_admin() ) {
+			//BIG nope nope nope!
+
+			$message = __( sprintf( 'Connected Forms for Caldera Forms requires PHP version %1s or later. We strongly recommend PHP 5.5 or later for security and performance reasons. Current version is %2s.', '5.3.0', PHP_VERSION ), 'cf-form-connector' );
+			echo caldera_warnings_dismissible_notice( $message, true, 'activate_plugins' );
+		}
+
+	}else{
+		include trailingslashit( CF_FORM_CON_PATH ) . 'includes/functions.php';
+		add_filter('caldera_forms_get_form_processors', 'cf_form_connector_register');
+
+	}
+
+}
+
+
 
 
 
