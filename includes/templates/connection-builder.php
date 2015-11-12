@@ -133,6 +133,8 @@ jQuery( function( $ ){
 		//add_newNode();
 
 	});
+
+    $('.caldera-header-save-button').prop('disabled', false);
 });
 function check_node_name( obj ){
     var form_fields = jQuery( '#addEndpoint_baldrickModalBody').find('[required]');
