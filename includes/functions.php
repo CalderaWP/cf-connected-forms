@@ -259,7 +259,6 @@ function cf_form_connector_setup_processors( $form ){
 
 	if( empty( $form['is_connected_form'] ) ){
 		return $form;
-
 	}
 
 	// fetch the connected stage form
@@ -775,7 +774,6 @@ function cf_form_connector_register($processors){
 	$processors['form-connector'] = array(
 		"name"				=>	__('Connected Forms', 'cf-form-connector'),
 		"description"		=>	__( 'Connect multiple forms.', 'cf-form-connector'),
-		//"icon"				=>	CF_FORM_CON_URL . "icon.png",
 		"author"			=>	"David Cramer & Josh Pollock for CalderaWP LLC",
 		"author_url"		=>	"https://CalderaWP.com",
 		"post_processor"	=>	'cf_form_connector_process',
@@ -832,9 +830,6 @@ function cf_form_connector_change_form( $form ) {
 			}
 			$form = $_form;
 		}
-
-
-
 	}
 
 	return $form;
@@ -859,8 +854,6 @@ function cf_form_connector_register_fields($fieldtypes){
 		"file"		=>	CF_FORM_CON_PATH . "includes/templates/back_field.php",
 		"category"	=>	__("Text Fields,User,Basic", "cf-users"),
 		"description" => 'Password field with confirm toggle',
-		//"handler"	 =>	'cf_form_connector_handle_next',
-		//"save"		=>	'cf_form_connector_save_next',
 		"setup"		=>	array(
 			"not_supported"	=>	array(
 				'entry_list'
@@ -872,8 +865,6 @@ function cf_form_connector_register_fields($fieldtypes){
 		"file"		=>	CF_FORM_CON_PATH . "includes/templates/next_field.php",
 		"category"	=>	__("Text Fields,User,Basic", "cf-users"),
 		"description" => 'Password field with confirm toggle',
-		//"handler"	 =>	'cf_form_connector_handle_next',
-		//"save"		=>	'cf_form_connector_save_next',
 		"setup"		=>	array(
 			"not_supported"	=>	array(
 				'entry_list'
