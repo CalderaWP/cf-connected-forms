@@ -79,7 +79,7 @@ add_filter( 'caldera_forms_get_panel_extensions', function( $panels ){
 
 			// add scripts
 			wp_enqueue_script( 'jsplumb', CF_FORM_CON_URL . 'assets/js/jsPlumb-1.7.10-min.js', array(), CF_FORM_CON_VER );
-			wp_enqueue_script( 'connector-ui', CF_FORM_CON_URL . 'assets/js/connector-ui.js', array('jsplumb'), CF_FORM_CON_VER );
+			wp_enqueue_script( 'connector-ui', CF_FORM_CON_URL . 'assets/js/connector-ui.min.js', array('jsplumb'), CF_FORM_CON_VER );
 			wp_enqueue_style( 'connector-ui', CF_FORM_CON_URL . 'assets/css/connector-ui.css', array(), CF_FORM_CON_VER );
 
 		}
@@ -751,7 +751,7 @@ add_filter( 'caldera_forms_render_get_form', function( $form ){
 		}
 		// setup the js handler if ajax
 		if( $form['form_ajax'] ){
-			wp_enqueue_script( 'cf-form-connector-ajax', CF_FORM_CON_URL . 'assets/js/cf-connected-ajax.js', array( 'jquery' ), CF_FORM_CON_VER , true );
+			wp_enqueue_script( 'cf-form-connector-ajax', CF_FORM_CON_URL . 'assets/js/cf-connected-ajax.min.js', array( 'jquery' ), CF_FORM_CON_VER , true );
 			$new_form['custom_callback'] = 'cf_connected_ajax_handler';
 		}
 		return $new_form;

@@ -14,5 +14,6 @@ jQuery( function( $ ){
 	cf_connected_ajax_handler = function( obj ){
 		var target = $( '#' + obj.target );
 		target.replaceWith( obj.form );
+		calders_forms_init_conditions();
 	}
 });
