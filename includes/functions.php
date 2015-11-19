@@ -18,7 +18,6 @@ add_filter( 'caldera_forms_get_form' ,'cf_form_connector_setup_processors_check'
 add_filter( 'caldera_forms_submit_get_form' ,'cf_form_connector_setup_processors');
 add_filter( 'caldera_forms_ajax_return', 'cf_form_connector_control_form_load', 10, 3 );
 add_action( 'caldera_forms_redirect', 'cf_form_connector_control_form_load_manual', 25, 3 );
-add_filter( 'caldera_forms_render_form_attributes', 'cf_form_connector_add_form_flag', 11, 2 );
 
 
 /**
@@ -759,28 +758,6 @@ add_filter( 'caldera_forms_render_get_form', function( $form ){
 
 	return $form;
 } );
-
-/**
- * Setup form attributes to mark as a connected form.
- *
- * @since 0.2.0
- *
- * @uses "caldera_forms_render_form_attributes"
- *
- * @param array $atts
-
- * @param array $form The form config
- *
- * @return mixed
- */
-function cf_form_connector_add_form_flag( $atts, $form ){
-	if( !empty( $form['connected_stage'] ) ){
-
-		//$atts['data-target-insert'] = 'replace';
-	};
-
-	return $atts;
-}
 
 /**
  * Registers the Form Connector processor
