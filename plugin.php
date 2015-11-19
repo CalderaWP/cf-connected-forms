@@ -29,6 +29,8 @@ define( 'CF_FORM_CON_PATH',  plugin_dir_path( __FILE__ ) );
 define( 'CF_FORM_CON_URL',  plugin_dir_url( __FILE__ ) );
 define( 'CF_FORM_CON_SLUG', '_users_connected_forms_dev' );
 define( 'CF_FORM_CON_VER', '0.2.0' );
+define( 'CF_FORM_CON_CORE', dirname( __FILE__ )  );
+
 
 
 // Load instance
@@ -47,6 +49,8 @@ function cf_form_connector_init(){
 		}
 
 	}else{
+		// load dependencies
+		include_once trailingslashit( CF_FORM_CON_PATH ) . 'vendor/autoload.php';
 		include trailingslashit( CF_FORM_CON_PATH ) . 'includes/functions.php';
 		add_filter('caldera_forms_get_form_processors', 'cf_form_connector_register');
 

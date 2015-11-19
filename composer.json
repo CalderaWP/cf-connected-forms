@@ -14,5 +14,8 @@
         }
     ],
     "minimum-stability": "dev",
-    "require": {}
+    "require": {
+        "calderawp/dismissible-notice": "dev-master",
+        "calderawp/licensing-helper" : "dev-master"
+    }
 }

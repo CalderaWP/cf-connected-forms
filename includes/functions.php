@@ -18,7 +18,29 @@ add_filter( 'caldera_forms_get_form' ,'cf_form_connector_setup_processors_check'
 add_filter( 'caldera_forms_submit_get_form' ,'cf_form_connector_setup_processors');
 add_filter( 'caldera_forms_ajax_return', 'cf_form_connector_control_form_load', 10, 3 );
 add_action( 'caldera_forms_redirect', 'cf_form_connector_control_form_load_manual', 25, 3 );
+add_action( 'admin_init', 'cf_connected_form_init_license' );
 
+/**
+ * Initializes the licensing system
+ *
+ * @uses "admin_init" action
+ *
+ * @since 0.2.0
+ */
+function cf_connected_form_init_license(){
+
+	$plugin = array(
+		'name'		=>	'Connected Caldera Forms',
+		'slug'		=>	'caldera-forms-connector',
+		'url'		=>	'https://calderawp.com/',
+		'version'	=>	CF_FORM_CON_VER,
+		'key_store'	=>  'cf_connected_forms',
+		'file'		=>  CF_FORM_CON_CORE,
+	);
+
+	new \calderawp\licensing_helper\licensing( $plugin );
+
+}
 
 /**
  * Set new connected form type as template
