@@ -3,12 +3,15 @@
 # Caldera Connected Forms
 Create sequences of forms with conditional logic. Split your forms into smaller pieces, with total control over what comes next. Use to combine multiple forms into one, create complex and variable registration and sales paths, surveys, quizzes and more. Take control of a complex process with the simple user interface you've come to expect from Caldera Forms.
 
-Requires Caldera Forms 1.3.1 beta 1 or later. As of now you will need to install from [the current-dev branch of Caldera Forms Github repo](https://github.com/Desertsnowman/Caldera-Forms/tree/current-dev).
+Requires Caldera Forms 1.3.1 beta 1 or later.
 
-<strong>For more information on how to use this thing see:</strong> [https://calderawp.com/doc/using-connected-caldera-forms/](https://calderawp.com/doc/using-connected-caldera-forms/)
+<strong>For more information on how to use this plugin see:</strong> [https://calderawp.com/doc/using-connected-caldera-forms/](https://calderawp.com/doc/using-connected-caldera-forms/)
 
-### PUBLIC BETA OF A PAID PRODUCT
-This repository is provided for our users to test the beta of a cool, and complicated new add-on that we are creating. Please keep in mind that this repository is most likely going to become private once the plugin is ready for proper release. Also, it is a beta and might not work as expected. If you find a bug please create and issue. If you have a fix please submit a pull request. Bug reports and pull requests will be rewarded handsomely:)
+### PUBLIC REPO FOR A PAID PRODUCT
+We are experimenting with using public git repos for commercial products. Support will only be provided via our [support system](https://calderawp.com/support/) which requires a valid license. If you are using this plugin please choose to purchase a license to recive support, support our work and 
+enable live updates.
+
+[Feel free to report bug here](https://github.com/CalderaWP/cf-connected-forms/issues) -- pull requests are accepted.
 
 
 ### License & Copyright
