@@ -42,9 +42,14 @@ if( !empty( $element['condition_points']['conditions'] ) ){
 
             <div class="cf-form-canvas canvas-wide flowchart-form cf-surface cf-surface-nopan" id="canvas">
             <?php
-                if( !empty( $element['node'] ) ){
+                if( ! empty( $element[ 'node' ] ) ) {
 
-                    foreach( $element['node'] as $node_id=>$node ){
+	                foreach ( $element[ 'node' ] as $node_id => $node ) {
+	                    if( ! isset( $forms[ $node[ 'form' ] ][ 'name' ] ) ) {
+		                    $not_found = sprintf( 'Form %s Not Found.',  $node[ 'form' ] );
+		                    printf( '<div class="error">%s</div>', esc_html__( $not_found, 'cf-connected-forms' ) );
+		                    continue;
+	                    }
                         $location = explode( ',', $node['position'] );
                         
                     ?>
