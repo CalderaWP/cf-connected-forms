@@ -480,8 +480,9 @@ function cf_form_connector_setup_processors_check( $form ){
 
 			// filter the meta to include the connected meta stuff.
 			add_filter( 'caldera_forms_get_entry_detail', 'cf_form_connector_setup_processors_meta', 10, 3 );
-		}
-
+		}		
+	}elseif( !empty( $form['is_connected_form'] ) ){
+		wp_enqueue_script( 'cf-conditionals' );
 	}
 
 	return $form;
