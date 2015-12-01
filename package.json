@@ -1,7 +1,7 @@
 {
   "name": "cf-connected-forms",
   "version": "1.0.1",
-  "description": "Mailchimp integration for Caldera Forms",
+  "description": "Connect multiple Caldera Forms into one sequence.",
   "repository": {
     "type": "git",
     "url": "https://github.com/CalderaWP/cf-connected-forms"
