@@ -101,7 +101,7 @@ module.exports = function (grunt) {
         },
         replace: {
             core_file: {
-                src: [ 'cf-form-connector.php' ],
+                src: [ 'plugin.php' ],
                 overwrite: true,
                 replacements: [{
                     from: /Version:\s*(.*)/,
