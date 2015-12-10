@@ -873,10 +873,10 @@ function cf_form_connector_change_form( $form ) {
 function cf_form_connector_register_fields($fieldtypes){
 
 	$fieldtypes['cfcf_back_nav'] = array(
-		"field"		=>	"Back Connected Form",
+		"field"		=>	__( "Back Navigation --- Connected Forms", 'cf-form-connector' ),
 		"file"		=>	CF_FORM_CON_PATH . "includes/templates/back_field.php",
-		"category"	=>	__("Text Fields,User,Basic", "cf-users"),
-		"description" => 'Password field with confirm toggle',
+		"category"	=>	__("Button", "cf-form-connector"),
+		"description" => __( 'Move Backwards In A Connected Forms Sequence', 'cf-form-connector' ),
 		"setup"		=>	array(
 			"not_supported"	=>	array(
 				'entry_list'
@@ -884,10 +884,10 @@ function cf_form_connector_register_fields($fieldtypes){
 		)
 	);
 	$fieldtypes['cfcf_next_nav'] = array(
-		"field"		=>	"Next Connected Form",
+		"field"		=>	__( "Forward Navigation --- Connected Forms", 'cf-form-connector' ),
 		"file"		=>	CF_FORM_CON_PATH . "includes/templates/next_field.php",
-		"category"	=>	__("Text Fields,User,Basic", "cf-users"),
-		"description" => 'Password field with confirm toggle',
+		"category"	=>	__("Button", "cf-form-connector"),
+		"description" => __( 'Move Forwards In A Connected Forms Sequence', 'cf-form-connector' ),
 		"setup"		=>	array(
 			"not_supported"	=>	array(
 				'entry_list'
