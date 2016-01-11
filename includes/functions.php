@@ -19,6 +19,7 @@ add_filter( 'caldera_forms_submit_get_form' ,'cf_form_connector_setup_processors
 add_filter( 'caldera_forms_ajax_return', 'cf_form_connector_control_form_load', 10, 3 );
 add_action( 'caldera_forms_redirect', 'cf_form_connector_control_form_load_manual', 25, 3 );
 add_action( 'admin_init', 'cf_connected_form_init_license' );
+add_action( 'init', 'cf_form_connector_export_merge' );
 
 /**
  * Initializes the licensing system
@@ -896,4 +897,46 @@ function cf_form_connector_register_fields($fieldtypes){
 	);
 
 	return $fieldtypes;
+}
+
+/**
+ * Merge entries during export
+ *
+ * @uses init
+ *
+ * @since 1.0.2
+ */
+function cf_form_connector_export_merge(){
+	if( is_admin() && isset( $_GET['export'], $_GET[ 'page' ] ) &&  $_GET['export'] && 'caldera-forms' == $_GET[ 'page' ] ){
+		$id = strip_tags( $_GET[ 'export' ] );
+		$form = Caldera_Forms::get_form( $id );
+		global $cf_con_fields;
+		$cf_con_fields = array();
+		if( isset( $form[ 'is_connected_form' ] ) && isset( $form[ 'node' ]) ){
+			foreach( $form[ 'node' ] as $node ){
+				$_id = $node[ 'form' ];
+				$_form = Caldera_Forms::get_form( $_id );
+				$_fields = $_form[ 'fields' ];
+				if( empty( $cf_con_fields ) ){
+					$cf_con_fields = $_fields;
+				}else{
+					$cf_con_fields = array_merge( $cf_con_fields, $_fields );
+				}
+			}
+
+
+		}
+
+		add_filter( 'caldera_forms_get_form', function( $form, $id ){
+			if( $_GET[ 'export' ] == $id ){
+				global $cf_con_fields;
+				$form[ 'fields' ] = $cf_con_fields;
+			}
+
+			return $form;
+		}, 50, 2 );
+
+
+	}
+
 }
