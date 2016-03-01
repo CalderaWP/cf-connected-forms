@@ -403,6 +403,9 @@ function cf_form_connector_setup_processors( $form ){
 				'next_form_id'			=> $stage['node'][ $condition['connect'] ]['form'],
 				'back_button'			=> $hasBack
 			),
+			'runtimes' => array(
+				'insert' => true
+			),
 			'conditions'	=>	array(
 			)
 		);
@@ -455,6 +458,9 @@ function cf_form_connector_setup_processors_check( $form ){
 		// setup processors
 		$form['processors']['_connected_form'] = array(
 			'type'	=> 'form-connector',
+			'runtimes' => array(
+				'insert' => true
+			),
 			'config' => array()
 		);
 
