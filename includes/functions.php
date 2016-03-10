@@ -20,6 +20,7 @@ add_filter( 'caldera_forms_ajax_return', 'cf_form_connector_control_form_load', 
 add_action( 'caldera_forms_redirect', 'cf_form_connector_control_form_load_manual', 25, 3 );
 add_action( 'admin_init', 'cf_connected_form_init_license' );
 add_action( 'init', 'cf_form_connector_export_merge' );
+add_filter( 'caldera_forms_do_magic_tag', 'cf_form_connector_magic_tag' );
 
 /**
  * Initializes the licensing system
@@ -110,6 +111,45 @@ add_filter( 'caldera_forms_get_panel_extensions', function( $panels ){
 	return $panels;
 
 });
+
+/**
+ * Add a magic tag for previous values
+ *
+ * @uses "caldera_forms_do_magic_tag"
+ *
+ * @since 1.0.4
+ */
+function cf_form_connector_magic_tag( $tag ) {
+	global $form;
+	
+	$parts = explode( ':', $tag );
+	if( count( $parts ) !== 2 || $parts[0] !== 'prev' ){
+		return $tag;
+	}
+	$check_field = $parts[1];
+
+	$position = cf_form_connector_get_current_position();
+	
+	if( empty( $form['ID'] ) || empty( $position[ $form['ID'] ] ) ){
+		return $tag;
+	}
+
+	$place = $position[ $form['ID'] ];
+	
+	if( isset( $place['field_values'][ $check_field ] ) ){
+		return $place['field_values'][ $check_field ];
+	}
+	// lookup slug
+	foreach( $place['fields'] as $field_id => $field ){
+		
+		if( $field['slug'] === $check_field && isset( $place['field_values'][ $field_id ] ) ){
+			return $place['field_values'][ $field_id ];
+		}
+	}
+
+	return $tag;
+
+}
 
 /**
  * Get base form for this connected form if is a connected form.
