@@ -66,9 +66,11 @@ add_action( 'caldera_forms_get_form_templates', function( $templates ){
  * @since 0.2.0
  */
 add_filter( 'caldera_forms_create_form', function( $form ){
-	parse_str( $_POST['data'], $newform );
-	if( ! empty( $newform['connected_form_primary'] ) ){
-		$form['is_connected_form'] = true;
+	if ( isset( $_POST[ 'data' ] ) ) {
+		parse_str( $_POST[ 'data' ], $newform );
+		if ( ! empty( $newform[ 'connected_form_primary' ] ) ) {
+			$form[ 'is_connected_form' ] = true;
+		}
 	}
 
 	return $form;
