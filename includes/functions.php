@@ -66,7 +66,7 @@ add_action( 'caldera_forms_get_form_templates', function( $templates ){
  * @since 0.2.0
  */
 add_filter( 'caldera_forms_create_form', function( $form ){
-	if ( isset( $_POST[ 'data' ] ) ) {
+	if ( isset( $_POST, $_POST[ 'data' ] ) ) {
 		parse_str( $_POST[ 'data' ], $newform );
 		if ( ! empty( $newform[ 'connected_form_primary' ] ) ) {
 			$form[ 'is_connected_form' ] = true;
@@ -497,6 +497,7 @@ function cf_form_connector_setup_processors( $form ){
  */
 function cf_form_connector_setup_processors_check( $form ){
 	if( is_admin() && !empty( $form['is_connected_form'] ) ){
+	if( is_admin() && isset( $form['is_connected_form'] ) ){
 		// setup processors
 		$form['processors']['_connected_form'] = array(
 			'type'	=> 'form-connector',
