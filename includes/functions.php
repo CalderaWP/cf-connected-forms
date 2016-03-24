@@ -497,7 +497,6 @@ function cf_form_connector_setup_processors( $form ){
  */
 function cf_form_connector_setup_processors_check( $form ){
 	if( is_admin() && !empty( $form['is_connected_form'] ) ){
-	if( is_admin() && isset( $form['is_connected_form'] ) ){
 		// setup processors
 		$form['processors']['_connected_form'] = array(
 			'type'	=> 'form-connector',
@@ -977,7 +976,7 @@ function cf_form_connector_export_merge(){
 		}
 
 		add_filter( 'caldera_forms_get_form', function( $form, $id ){
-			if( $_GET[ 'export' ] == $id ){
+			if( $_GET[ 'export' ] == $id && !empty( $form['is_connected_form'] ) ){
 				global $cf_con_fields;
 				$form[ 'fields' ] = $cf_con_fields;
 			}
