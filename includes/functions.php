@@ -739,15 +739,17 @@ add_filter( 'caldera_forms_render_get_form', function( $form ){
 		$new_form['ID'] = $form['ID'];
 		$new_form['current_form'] = $current_form;
 
-		foreach( $new_form['fields'] as $field_id => $field ){
-			// remove any submit buttons
-			if( $field['type'] == 'button' && $field['config']['type'] =='submit' ){
-				//unset( $new_form['fields'][ $field_id ] );
-				unset( $new_form['layout_grid']['fields'][ $field_id ] );
+		$pages = explode( '#', $new_form['layout_grid']['structure'] );
+		if( count( $pages ) != 1 ) {
+			foreach ( $new_form[ 'fields' ] as $field_id => $field ) {
+				// remove any submit buttons
+				if ( $field[ 'type' ] == 'button' && $field[ 'config' ][ 'type' ] == 'submit' ) {
+					unset( $new_form[ 'layout_grid' ][ 'fields' ][ $field_id ] );
+				}
+
 			}
 		}
 
-		$pages = explode( '#', $new_form['layout_grid']['structure'] );
 		if( count( $pages ) <= 1 ){
 			// single page- add to this one			
 			$rows = explode('|', $new_form['layout_grid']['structure'] );
@@ -816,9 +818,8 @@ add_filter( 'caldera_forms_render_get_form', function( $form ){
 			// add filter to register the nav buttoms ( this is so that they dont show in form builder )
 			add_filter('caldera_forms_get_field_types', 'cf_form_connector_register_fields');
 			
-		}else{
-
 		}
+
 		// setup the js handler if ajax
 		if( $form['form_ajax'] ){
 			wp_enqueue_script( 'cf-form-connector-ajax', CF_FORM_CON_URL . 'assets/js/cf-connected-ajax.min.js', array( 'jquery' ), CF_FORM_CON_VER , true );
