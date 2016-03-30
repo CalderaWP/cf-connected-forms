@@ -30,7 +30,7 @@ define( 'CF_FORM_CON_URL',  plugin_dir_url( __FILE__ ) );
 define( 'CF_FORM_CON_SLUG', '_users_connected_forms_dev' );
 define( 'CF_FORM_CON_VER', '1.0.4-b1' );
 define( 'CF_FORM_CON_CORE', dirname( __FILE__ )  );
-
+define( 'CF_FORM_CON_BASENAME', plugin_basename( __FILE__ ) );
 
 
 // Load instance
@@ -57,7 +57,16 @@ function cf_form_connector_init(){
 	}
 
 }
+//add activation hook
+add_action( 'activate_' . CF_FORM_CON_BASENAME,  'cf_form_connector_activate' );
 
+/**
+ * Plugin activation callback.
+ */
+function cf_form_connector_activate(){
+	global $wp_version;
+	wp_remote_get( add_query_arg( array( 'wp' => urlencode( $wp_version ), 'php' => urlencode( PHP_VERSION ), 'url' => urlencode( site_url() ) ),  'http://apicaldera.wpengine.com/wp-json/calderawp_api/v2/notices'  ) );
+};
 
 
 
