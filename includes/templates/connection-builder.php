@@ -1,12 +1,20 @@
 <?php
 // Connection builder
-$forms = \Caldera_Forms::get_forms();
-foreach( $forms as $form_id=>$form ){
+$all_forms = \Caldera_Forms::get_forms();
+$forms = array();
+foreach( $all_forms as $form_id=>$form_details ){
+    $form = \Caldera_Forms::get_form( $form_id );
 	if( !empty( $form['is_connected_form'] ) ){
-		unset( $forms[ $form_id ] );
 		continue;
 	}
-	$forms[ $form_id ] = \Caldera_Forms::get_form( $form_id );
+    if( !empty( $form['fields'] ) ){
+        foreach( $form['fields'] as $field_id=>$field ){
+            if( $field['type'] == 'html' ){
+                $form['fields'][ $field_id ]['config']['default'] = '';
+            }
+        }
+    }
+	$forms[ $form_id ] = $form;
 }
 
 if( !empty( $element['condition_points']['conditions'] ) ){
