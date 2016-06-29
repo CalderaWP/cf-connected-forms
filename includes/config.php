@@ -9,7 +9,7 @@
  * @copyright 2015 David Cramer & Josh Pollock for CalderaWP
  */
 
-$forms = \Caldera_Forms::get_forms();
+$forms = \Caldera_Forms_Forms::get_forms( true );
 
 ?>
 

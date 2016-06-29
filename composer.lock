@@ -1,0 +1,96 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "This file is @generated automatically"
+    ],
+    "hash": "76082dff1304b5c316abe507139f25ca",
+    "content-hash": "721f06675ea6ca94a80d97c0ab9cabb1",
+    "packages": [
+        {
+            "name": "calderawp/dismissible-notice",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/CalderaWP/dismissible_notice.git",
+                "reference": "26a0a00cced207464eb005d2eeb3ab93727363d3"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/CalderaWP/dismissible_notice/zipball/26a0a00cced207464eb005d2eeb3ab93727363d3",
+                "reference": "26a0a00cced207464eb005d2eeb3ab93727363d3",
+                "shasum": ""
+            },
+            "type": "library",
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL v2+"
+            ],
+            "authors": [
+                {
+                    "name": "Josh Pollock",
+                    "email": "Josh@JoshPress.net"
+                }
+            ],
+            "description": "Creates a dismissible--via AJAX--admin nag.",
+            "time": "2015-08-24 20:27:16"
+        },
+        {
+            "name": "calderawp/licensing-helper",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/CalderaWP/licensing-helper.git",
+                "reference": "b56be8e90100b03dc8fa6588ab202c257df38ebb"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/CalderaWP/licensing-helper/zipball/b56be8e90100b03dc8fa6588ab202c257df38ebb",
+                "reference": "b56be8e90100b03dc8fa6588ab202c257df38ebb",
+                "shasum": ""
+            },
+            "require": {
+                "calderawp/dismissible-notice": "dev-master",
+                "php": ">=5.3.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "calderawp\\licensing_helper\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-2.0+"
+            ],
+            "authors": [
+                {
+                    "name": "David Cramer",
+                    "homepage": "http://cramer.co.za",
+                    "role": "Developer"
+                },
+                {
+                    "name": "Josh Pollock",
+                    "email": "Josh@JoshPress.net",
+                    "homepage": "http://joshpress.net"
+                }
+            ],
+            "description": "Helper class for CalderaWP Licensing Manager",
+            "keywords": [
+                "wordpress"
+            ],
+            "time": "2016-04-15 15:48:29"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": {
+        "calderawp/dismissible-notice": 20,
+        "calderawp/licensing-helper": 20
+    },
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
