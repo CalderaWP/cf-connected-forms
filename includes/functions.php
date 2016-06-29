@@ -84,7 +84,7 @@ add_filter( 'caldera_forms_create_form', function( $form ){
  */
 add_filter( 'caldera_forms_get_panel_extensions', function( $panels ){
 	if( !empty( $_GET['edit'] ) ){
-		$form = \Caldera_Forms::get_form( $_GET['edit'] );
+		$form = \Caldera_Forms_Forms::get_form( $_GET['edit'] );
 		if( !empty( $form['is_connected_form'] ) ){
 
 			//setup new panels for this type.
@@ -327,7 +327,7 @@ function cf_form_connector_setup_processors( $form ){
 	}
 
 	// fetch the connected stage form
-	$base_form = Caldera_Forms::get_form( cf_form_connector_get_base_form( $form ) );
+	$base_form = Caldera_Forms_Forms::get_form( cf_form_connector_get_base_form( $form ) );
 	if( !empty( $_POST['cffld_stage'] ) ){
 		$current_form = Caldera_Forms_Sanitize::sanitize( $_POST['cffld_stage'] );
 		// check this is part of the flow
@@ -344,7 +344,7 @@ function cf_form_connector_setup_processors( $form ){
 	$process_record = cf_form_connector_get_current_position();
 
 	// get this form to be run
-	$form = Caldera_Forms::get_form( $current_form );
+	$form = Caldera_Forms_Forms::get_form( $current_form );
 	// check to see if its a back track
 	if( !empty( $_POST['cffld_backnav'] ) && !empty( $process_record[ $stage['ID'] ] ) ){
 
@@ -554,7 +554,7 @@ function cf_form_connector_setup_processors_meta( $entry, $entry_id, $form ){
 	if( !empty( $entry['meta']['form-connector']['data']['_connected_form']['entry']['form']['meta_value'] ) ){
 		foreach( (array) $entry['meta']['form-connector']['data']['_connected_form']['entry']['form']['meta_value'] as $form_meta ){
 			foreach( $form_meta as $connected_form=>$connected_entry ){
-				$meta = Caldera_Forms::get_entry_meta( $connected_entry, Caldera_Forms::get_form( $connected_form ) );
+				$meta = Caldera_Forms::get_entry_meta( $connected_entry, Caldera_Forms_Forms::get_form( $connected_form ) );
 				if( !empty( $meta ) ){
 					foreach ($meta as $meta_key => $meta_data ) {
 						$entry['meta'][ $meta_key ] = $meta_data;
@@ -581,7 +581,7 @@ function cf_form_connector_setup_processors_meta( $entry, $entry_id, $form ){
 function cf_form_connector_control_form_load_manual($type, $url, $form ){
 
 	if( !empty( $form['stage_form'] ) ){
-		$stage_form = Caldera_Forms::get_form( $form['stage_form'] );
+		$stage_form = Caldera_Forms_Forms::get_form( $form['stage_form'] );
 		$process_record = cf_form_connector_get_current_position();
 		
 		if( !empty( $form['form_connection'] ) ){
@@ -619,7 +619,7 @@ function cf_form_connector_control_form_load( $out, $form ){
 
 	if( !empty( $form['stage_form'] ) ){
 
-		$stage_form = Caldera_Forms::get_form( $form['stage_form'] );
+		$stage_form = Caldera_Forms_Forms::get_form( $form['stage_form'] );
 		$process_record = cf_form_connector_get_current_position();
 		
 		if( !empty( $form['form_connection'] ) ){
@@ -696,6 +696,7 @@ function cf_form_connector_partial_populate_form( $data, $form ){
 
 add_filter( 'caldera_forms_render_get_form', function( $form ){
 	if( !empty( $form['is_connected_form'] ) ){
+		$new_form = false;
 
 		$base_form = cf_form_connector_get_base_form( $form );
 		// Some checks to see if this user is working on this for / or whatever to load the new entry
@@ -710,7 +711,7 @@ add_filter( 'caldera_forms_render_get_form', function( $form ){
 					$no_back_button = true;
 				}
 			}
-			$new_form = Caldera_Forms::get_form( $process_record[ $form['ID'] ]['current_form'] );
+			$new_form = Caldera_Forms_Forms::get_form( $process_record[ $form['ID'] ]['current_form'] );
 			if( !empty( $process_record[ $form['ID'] ][ $new_form['ID'] ]['pre_data'] ) && empty( $process_record[ $form['ID'] ][ $new_form['ID'] ]['id'] ) ){
 				add_filter( 'caldera_forms_render_pre_get_entry', 'cf_form_connector_partial_populate_form', 10, 2 );
 			}
@@ -718,7 +719,7 @@ add_filter( 'caldera_forms_render_get_form', function( $form ){
 
 		if( empty( $new_form ) ){
 			// not form replacement, load up base
-			$new_form = Caldera_Forms::get_form( $base_form );
+			$new_form = Caldera_Forms_Forms::get_form( $base_form );
 		}
 		// check if there are any connection points	
 		foreach( $form['condition_points']['conditions'] as $condition_point => $condition ){
@@ -739,7 +740,13 @@ add_filter( 'caldera_forms_render_get_form', function( $form ){
 		$new_form['ID'] = $form['ID'];
 		$new_form['current_form'] = $current_form;
 
-		$pages = explode( '#', $new_form['layout_grid']['structure'] );
+
+		if ( isset( $new_form[ 'layout_grid' ], $new_form[ 'layout_grid' ][ 'structure' ] ) ) {
+			$pages = explode( '#', $new_form['layout_grid']['structure'] );
+		}else{
+			$pages = 1;
+		}
+
 		if( count( $pages ) != 1 ) {
 			foreach ( $new_form[ 'fields' ] as $field_id => $field ) {
 				// remove any submit buttons
@@ -894,7 +901,7 @@ function cf_form_connector_change_form( $form ) {
 		&& wp_verify_nonce( $_GET[ 'cf_con_nonce' ], 'cf_con_nonce' )
 	) {
 		remove_filter( 'caldera_forms_render_get_form', 'cf_form_connector_change_form' );
-		$_form = Caldera_Forms::get_form( Caldera_Forms_Sanitize::sanitize( $_GET[ 'cf_con_form_id' ] ) );
+		$_form = Caldera_Forms_Forms::get_form( Caldera_Forms_Sanitize::sanitize( $_GET[ 'cf_con_form_id' ] ) );
 		if ( is_array( $_form ) ) {
 			if ( isset( $_GET[ 'cf_id' ] ) && 0 < absint( $_GET[ 'cf_id' ] ) ) {
 				add_filter( 'caldera_forms_render_entry_id', function( $entry_id ) {
@@ -958,13 +965,13 @@ function cf_form_connector_register_fields($fieldtypes){
 function cf_form_connector_export_merge(){
 	if( is_admin() && isset( $_GET['export'], $_GET[ 'page' ] ) &&  $_GET['export'] && 'caldera-forms' == $_GET[ 'page' ] ){
 		$id = strip_tags( $_GET[ 'export' ] );
-		$form = Caldera_Forms::get_form( $id );
+		$form = Caldera_Forms_Forms::get_form( $id );
 		global $cf_con_fields;
 		$cf_con_fields = array();
 		if( isset( $form[ 'is_connected_form' ] ) && isset( $form[ 'node' ]) ){
 			foreach( $form[ 'node' ] as $node ){
 				$_id = $node[ 'form' ];
-				$_form = Caldera_Forms::get_form( $_id );
+				$_form = Caldera_Forms_Forms::get_form( $_id );
 				$_fields = $_form[ 'fields' ];
 				if( empty( $cf_con_fields ) ){
 					$cf_con_fields = $_fields;
@@ -989,3 +996,24 @@ function cf_form_connector_export_merge(){
 	}
 
 }
+
+/**
+ * Validate form config
+ *
+ * This should probably go in CF itself
+ *
+ * @since 1.0.5
+ */
+add_filter( 'caldera_forms_get_form', function( $form ){
+	if( ! isset( $form[ 'is_connected_form' ] ) ){
+		$form[ 'is_connected_form' ] = false;
+	}
+
+	foreach( array( 'processors','layout_grid', 'fields', 'mailer' ) as $key ){
+		if( ! isset( $form[ $key ] ) ){
+			$form[ $key ] = array();
+		}
+	}
+
+	return $form;
+});
