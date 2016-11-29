@@ -22,6 +22,12 @@ add_action( 'admin_init', 'cf_connected_form_init_license' );
 add_action( 'init', 'cf_form_connector_export_merge' );
 add_filter( 'caldera_forms_do_magic_tag', 'cf_form_connector_magic_tag' );
 
+
+add_filter( 'caldera_forms_render_get_form', function( $form ){
+	if( ! empty( $form['is_connected_form'] ) ){
+		$x= 1;
+	}
+}, 29 );
 /**
  * Initializes the licensing system
  *
@@ -699,6 +705,31 @@ add_filter( 'caldera_forms_render_get_form', function( $form ){
 		$new_form = false;
 
 		$base_form = cf_form_connector_get_base_form( $form );
+
+		if ( empty( $_POST ) && method_exists( 'Caldera_Forms_Forms', 'get_fields') ) {
+			$field_types_in_sequence = array();
+			$field_types = apply_filters( 'caldera_forms_get_field_types', array() );
+			foreach ( $form[ 'node' ] as $node ) {
+				$_form = Caldera_Forms_Forms::get_form( $node[ 'form' ] );
+				$fields = Caldera_Forms_Forms::get_fields( $_form );
+				foreach( $fields as $id => $field ){
+					$type = Caldera_Forms_Field_Util::get_type( $field,$_form );
+					if( ! array_key_exists( $type, $field_types_in_sequence ) ){
+						$field_types_in_sequence[ $type ] = $field;
+					}
+
+				}
+
+			}
+
+			if( ! empty( $field_types_in_sequence ) ){
+				foreach (  $field_types_in_sequence  as $type  => $field  ) {
+
+					Caldera_Forms_Render_Assets::enqueue_field_scripts( $field_types, $field);
+				}
+			}
+		}
+
 		// Some checks to see if this user is working on this for / or whatever to load the new entry
 		// if nothing i.e a new start, then we're on the base form!
 		// get the process record
