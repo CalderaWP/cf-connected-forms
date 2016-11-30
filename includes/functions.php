@@ -12,15 +12,23 @@
 /**
  * Add our hooks
  */
-add_filter( 'caldera_forms_render_entry_id', 'cf_form_connector_get_stage_state', 10, 2 );
-add_action( 'init', 'cf_form_connector_init_current_position' );
-add_filter( 'caldera_forms_get_form' ,'cf_form_connector_setup_processors_check');
-add_filter( 'caldera_forms_submit_get_form' ,'cf_form_connector_setup_processors');
-add_filter( 'caldera_forms_ajax_return', 'cf_form_connector_control_form_load', 10, 3 );
-add_action( 'caldera_forms_redirect', 'cf_form_connector_control_form_load_manual', 25, 3 );
-add_action( 'admin_init', 'cf_connected_form_init_license' );
-add_action( 'init', 'cf_form_connector_export_merge' );
-add_filter( 'caldera_forms_do_magic_tag', 'cf_form_connector_magic_tag' );
+//Most hooks, if added will break advanced file fields submission, so don't use on those
+//SEE: https://github.com/CalderaWP/cf-connected-forms/issues/23
+if ( empty( $_POST[ 'control' ] ) ) {
+	add_filter( 'caldera_forms_render_entry_id', 'cf_form_connector_get_stage_state', 10, 2 );
+	add_action( 'init', 'cf_form_connector_init_current_position' );
+	add_filter( 'caldera_forms_get_form', 'cf_form_connector_setup_processors_check' );
+	add_filter( 'caldera_forms_submit_get_form', 'cf_form_connector_setup_processors' );
+	add_filter( 'caldera_forms_ajax_return', 'cf_form_connector_control_form_load', 10, 3 );
+	add_action( 'caldera_forms_redirect', 'cf_form_connector_control_form_load_manual', 25, 3 );
+	add_action( 'admin_init', 'cf_connected_form_init_license' );
+	add_action( 'init', 'cf_form_connector_export_merge' );
+	add_filter( 'caldera_forms_do_magic_tag', 'cf_form_connector_magic_tag' );
+}
+
+//this one is for advanced file fields
+add_filter( 'caldera_forms_get_form', 'cf_conn_form_switch_form_for_file_upload' );
+
 
 
 /**
@@ -695,11 +703,13 @@ function cf_form_connector_partial_populate_form( $data, $form ){
 	return $data;
 }
 
+
 add_filter( 'caldera_forms_render_get_form', function( $form ){
 	if( !empty( $form['is_connected_form'] ) ){
 		$new_form = false;
 
 		$base_form = cf_form_connector_get_base_form( $form );
+
 
 		if ( empty( $_POST ) && method_exists( 'Caldera_Forms_Forms', 'get_fields') ) {
 			$field_types_in_sequence = array();
@@ -770,88 +780,100 @@ add_filter( 'caldera_forms_render_get_form', function( $form ){
 		if ( isset( $new_form[ 'layout_grid' ], $new_form[ 'layout_grid' ][ 'structure' ] ) ) {
 			$pages = explode( '#', $new_form['layout_grid']['structure'] );
 		}else{
-			$pages = 1;
+			$pages = array();
 		}
 
-		if( count( $pages ) != 1 ) {
-			foreach ( $new_form[ 'fields' ] as $field_id => $field ) {
-				// remove any submit buttons
-				if ( $field[ 'type' ] == 'button' && $field[ 'config' ][ 'type' ] == 'submit' ) {
-					unset( $new_form[ 'layout_grid' ][ 'fields' ][ $field_id ] );
-				}
+		$submit_button_position = false;
+		foreach ( $new_form[ 'fields' ] as $field_id => $field ) {
+			// remove any submit buttons
 
+			if ( $field[ 'type' ] == 'button' && $field[ 'config' ][ 'type' ] == 'submit' ) {
+				$submit_button_position = $new_form[ 'layout_grid' ][ 'fields' ][ $field_id ];
+				unset( $form[ 'fields' ][ $field_id ] );
+				unset( $new_form[ 'layout_grid' ][ 'fields' ][ $field_id ] );
+			}
+
+		}
+
+		$rows     = explode( '|', $new_form[ 'layout_grid' ][ 'structure' ] );
+		$last_row = count( $rows ) + 1;
+		if(count( $pages ) <= 1 ) {
+			// single page- add to this one
+			$new_form[ 'layout_grid' ][ 'structure' ] .= '|6:6';
+			$submit_button_position = $last_row . ':2';
+
+		}
+		if( empty( $submit_button_position ) ){
+			$submit_button_position = $last_row . ':2';
+
+		}
+
+		$new_form[ 'layout_grid' ][ 'fields' ][ 'cffld_nextnav' ] = $submit_button_position;
+
+
+
+		$new_form[ 'layout_grid' ][ 'fields' ][ 'cffld_stage' ]   = $last_row . ':2';
+
+		if( !empty( $previous_form ) && $previous_form != $new_form['ID'] ){
+
+			if( empty( $no_back_button ) ){
+				$new_form['layout_grid']['fields']['cffld_backnav'] = $last_row . ':1';
+				$new_form['fields']['cffld_backnav'] = array(
+					'ID' => 'cffld_backnav',
+					'type' => 'cfcf_back_nav',
+					'label' => __('Back', 'cf-form-connector' ),
+					'slug' => 'cfcf_back_nav',
+					'conditions' => array(
+						'type' => ''
+					),
+					'caption' => '',
+					'config' => array(
+						'custom_class' => '',
+						'visibility' => 'all',
+						'type' => 'back',
+						'class' => 'btn btn-default',
+						'default' => ''
+					)
+				);
 			}
 		}
 
-		if( count( $pages ) <= 1 ){
-			// single page- add to this one			
-			$rows = explode('|', $new_form['layout_grid']['structure'] );
-			$last_row = count( $rows ) + 1;
-			// add last row for navigation
-			// perhaps a template thing.... later.
-			$new_form['layout_grid']['structure'] .= '|6:6';			
-			$new_form['layout_grid']['fields']['cffld_nextnav'] = $last_row . ':2';
-			$new_form['layout_grid']['fields']['cffld_stage'] = $last_row . ':2';
-			
-			if( !empty( $previous_form ) && $previous_form != $new_form['ID'] ){
-				
-				if( empty( $no_back_button ) ){
-					$new_form['layout_grid']['fields']['cffld_backnav'] = $last_row . ':1';
-					$new_form['fields']['cffld_backnav'] = array(
-						'ID' => 'cffld_backnav',
-						'type' => 'cfcf_back_nav',
-						'label' => __('Back', 'cf-form-connector' ),
-						'slug' => 'cfcf_back_nav',
-						'conditions' => array(
-							'type' => ''
-						),
-						'caption' => '',
-						'config' => array(
-							'custom_class' => '',
-							'visibility' => 'all',
-							'type' => 'back',
-							'class' => 'btn btn-default',
-							'default' => ''
-						)
-					);
-				}
-			}
-			$new_form['fields']['cffld_nextnav'] = array(
-				'ID' => 'cffld_nextnav',
-				'type' => 'cfcf_next_nav',
-				'label' => ( !empty( $has_connections ) ? __('Next', 'cf-form-connector' ) : __('Submit', 'cf-form-connector' ) ),
-				'slug' => 'cfcf_next_nav',
-				'conditions' => array(
-					'type' => ''
-				),
-				'caption' => '',
-				'config' => array(
-					'custom_class' => '',
-					'visibility' => 'all',
-					'type' => 'next',
-					'class' => 'btn btn-default pull-right',
-				)
-			);
-			$new_form['fields']['cffld_stage'] = array(
-				'ID' => 'cffld_stage',
-				'type' => 'hidden',
-				'label' => '',
-				'slug' => 'cffld_stage',
-				'conditions' => array(
-					'type' => ''
-				),
-				'caption' => '',
-				'config' => array(
-					'custom_class' => '',
-					'visibility' => 'all',
-					'default' => $current_form
-				)
-			);
-			$new_form['connected_stage'] = true;
-			// add filter to register the nav buttoms ( this is so that they dont show in form builder )
-			add_filter('caldera_forms_get_field_types', 'cf_form_connector_register_fields');
-			
-		}
+		$new_form['fields']['cffld_nextnav'] = array(
+			'ID' => 'cffld_nextnav',
+			'type' => 'cfcf_next_nav',
+			'label' => ( !empty( $has_connections ) ? __('Next', 'cf-form-connector' ) : __('Submit', 'cf-form-connector' ) ),
+			'slug' => 'cfcf_next_nav',
+			'conditions' => array(
+				'type' => ''
+			),
+			'caption' => '',
+			'config' => array(
+				'custom_class' => '',
+				'visibility' => 'all',
+				'type' => 'next',
+				'class' => 'btn btn-default pull-right',
+			)
+		);
+		$new_form['fields']['cffld_stage'] = array(
+			'ID' => 'cffld_stage',
+			'type' => 'hidden',
+			'label' => '',
+			'slug' => 'cffld_stage',
+			'conditions' => array(
+				'type' => ''
+			),
+			'caption' => '',
+			'config' => array(
+				'custom_class' => '',
+				'visibility' => 'all',
+				'default' => $current_form
+			)
+		);
+		$new_form['connected_stage'] = true;
+		// add filter to register the nav buttoms ( this is so that they dont show in form builder )
+		add_filter('caldera_forms_get_field_types', 'cf_form_connector_register_fields');
+
+
 
 		// setup the js handler if ajax
 		if( $form['form_ajax'] ){
@@ -1043,3 +1065,47 @@ add_filter( 'caldera_forms_get_form', function( $form ){
 
 	return $form;
 });
+
+/**
+ * Add query args to submit url to identify as connected forms and what forms are involvesd
+ *
+ * @since 1.0.6
+ */
+add_filter( 'caldera_forms_submission_url', function( $url, $form_id ){
+	$form = Caldera_Forms_Forms::get_form( $form_id );
+	if( !empty( $form['is_connected_form'] ) ){
+		$positon = cf_form_connector_get_current_position();
+
+		$current = $form_id;
+		if( ! empty( $positon[ $form_id ] ) ){
+			$current = $positon[ $form_id ][ 'current_form' ];
+		}
+		$url = add_query_arg( array( 'con_current' => $current, 'con_base' => $form_id ), $url  );
+	}
+
+	return $url;
+}, 50, 2);
+
+
+
+/**
+ * When submitting a advanced fiel field in a connected form, change form ID from connectef form to current form
+ *
+ * @since 1.0.6
+ *
+ * @uses "caldera_forms_get_form" action
+ *
+ * @param $form
+ *
+ * @return array|null
+ */
+function cf_conn_form_switch_form_for_file_upload( $form ){
+	if( isset( $_REQUEST[ 'control' ], $_REQUEST[ 'con_current' ] ) ){
+		set_query_var( 'cf_api', $_REQUEST[ 'con_current' ] );
+
+		remove_filter( 'caldera_forms_get_form', __FUNCTION__ );
+		$form = Caldera_Forms_Forms::get_form( $_REQUEST[ 'con_current' ] );
+	}
+
+	return $form;
+}
