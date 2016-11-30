@@ -487,6 +487,8 @@ function cf_form_connector_setup_processors( $form ){
 			Caldera_Forms::set_submission_meta( 'form', array( $form_id => $data['id'] ), $form, '_connected_form');
 		}
 
+		cf_form_connector_set_current_position( array() );
+
 	}
 
 	return $form;
@@ -757,6 +759,7 @@ add_filter( 'caldera_forms_render_get_form', function( $form ){
 			// not form replacement, load up base
 			$new_form = Caldera_Forms_Forms::get_form( $base_form );
 		}
+
 		// check if there are any connection points	
 		foreach( $form['condition_points']['conditions'] as $condition_point => $condition ){
 
