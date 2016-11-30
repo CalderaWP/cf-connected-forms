@@ -23,11 +23,6 @@ add_action( 'init', 'cf_form_connector_export_merge' );
 add_filter( 'caldera_forms_do_magic_tag', 'cf_form_connector_magic_tag' );
 
 
-add_filter( 'caldera_forms_render_get_form', function( $form ){
-	if( ! empty( $form['is_connected_form'] ) ){
-		$x= 1;
-	}
-}, 29 );
 /**
  * Initializes the licensing system
  *
