@@ -1,6 +1,6 @@
 {
   "name": "cf-connected-forms",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Connect multiple Caldera Forms into one sequence.",
   "repository": {
     "type": "git",
