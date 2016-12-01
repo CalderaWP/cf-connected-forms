@@ -427,6 +427,7 @@ function cf_form_connector_setup_processors( $form ){
 
 	// disable mailer
 	$form['mailer']['enable_mailer'] = false;
+	$form['mailer']['on_insert'] = false;
 	// setup each connection condition
 	$final_form_fields = array();
 	foreach( $stage['condition_points']['conditions'] as $condition_point => $condition ){
@@ -487,7 +488,8 @@ function cf_form_connector_setup_processors( $form ){
 			Caldera_Forms::set_submission_meta( 'form', array( $form_id => $data['id'] ), $form, '_connected_form');
 		}
 
-		cf_form_connector_set_current_position( array() );
+		$process_record[ $form['stage_form'] ] = array();
+		cf_form_connector_set_current_position( $process_record );
 
 	}
 
@@ -661,11 +663,28 @@ function cf_form_connector_control_form_load( $out, $form ){
 			wp_send_json( array( 'target' => $form['stage_form'] . '_' . (int) $_POST['_cf_frm_ct'], 'form' => Caldera_Forms::render_form( $stage_form ) ) );
 		}else{
 			// is current = stage ? yup last form last process.
-			if( !empty( $process_record[ $form['stage_form'] ][ 'current_form'] ) && $process_record[ $form['stage_form'] ][ 'current_form'] === $form['stage_form'] ){
+			if( empty( $form['form_connection'] )
+			   || ( !empty( $process_record[ $form['stage_form'] ][ 'current_form'] ) && $process_record[ $form['stage_form'] ][ 'current_form'] === $form['stage_form'] ) )
+			{
 				
-				$process_record[ $form['stage_form'] ] = array();
-				cf_form_connector_set_current_position( $process_record );
-				
+
+				$connected_form = Caldera_Forms_Forms::get_form( $form['stage_form'] );
+				if( is_array( $connected_form ) && ( ! empty(  $connected_form['mailer']['enable_mailer'] ) || $connected_form['mailer']['on_insert'] ) ){
+
+					if( isset( $out [ 'data' ][ 'cf_id' ] ) ){
+						$entry_id = $out[ 'data' ][ 'cf_id' ];
+					}else{
+						$entry_id = (int) Caldera_Forms::do_magic_tags( '{entry_id}' );
+
+					}
+					//$entry_id = null;
+					$fields = cf_conn_form_get_all_fields( $connected_form );
+					$connected_form[ 'fields' ] = $fields;
+
+					$process_record[ $form['stage_form'] ] = array();
+					cf_form_connector_set_current_position( $process_record );
+					Caldera_Forms_Save_Final::do_mailer( $connected_form );
+				}
 				return $out;
 			}
 
@@ -1023,7 +1042,12 @@ function cf_form_connector_export_merge(){
 			foreach( $form[ 'node' ] as $node ){
 				$_id = $node[ 'form' ];
 				$_form = Caldera_Forms_Forms::get_form( $_id );
-				$_fields = $_form[ 'fields' ];
+				if( method_exists( 'Caldera_Forms_Forms', 'get_fields')){
+					$_fields = Caldera_Forms_Forms::get_fields( $_form, false );
+				}else{
+					$_fields = $_form[ 'fields' ];
+				}
+
 				if( empty( $cf_con_fields ) ){
 					$cf_con_fields = $_fields;
 				}else{
@@ -1111,4 +1135,35 @@ function cf_conn_form_switch_form_for_file_upload( $form ){
 	}
 
 	return $form;
+}
+
+
+add_filter( 'caldera_forms_get_field_order', 'cf_conn_form_set_order_for_email', 25, 2 );
+function cf_conn_form_set_order_for_email( $order, $form ){
+	if( isset( $form[ 'node' ] ) ){
+		$fields = cf_conn_form_get_all_fields( $form );
+
+		if( ! empty( $fields ) ){
+			$order = array_keys( $fields );
+		}
+	}
+
+	return $order;
+}
+
+
+function cf_conn_form_get_all_fields( $connected_form ){
+	$fields = array();
+
+	if( isset( $connected_form[ 'node' ] ) ) {
+
+		foreach ( $connected_form[ 'node' ] as $connected_form ) {
+			$_form  = Caldera_Forms_Forms::get_form( $connected_form[ 'form' ] );
+			$fields = array_merge( Caldera_Forms_Forms::get_fields( $_form ), $fields );
+		}
+
+	}
+
+	return $fields;
+
 }
