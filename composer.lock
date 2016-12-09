@@ -41,12 +41,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/CalderaWP/licensing-helper.git",
-                "reference": "b56be8e90100b03dc8fa6588ab202c257df38ebb"
+                "reference": "f378f3ffd1f527360d0b462ecebced4c77e78a27"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/CalderaWP/licensing-helper/zipball/b56be8e90100b03dc8fa6588ab202c257df38ebb",
-                "reference": "b56be8e90100b03dc8fa6588ab202c257df38ebb",
+                "url": "https://api.github.com/repos/CalderaWP/licensing-helper/zipball/f378f3ffd1f527360d0b462ecebced4c77e78a27",
+                "reference": "f378f3ffd1f527360d0b462ecebced4c77e78a27",
                 "shasum": ""
             },
             "require": {
@@ -79,7 +79,7 @@
             "keywords": [
                 "wordpress"
             ],
-            "time": "2016-04-15 15:48:29"
+            "time": "2016-11-06 19:40:16"
         }
     ],
     "packages-dev": [],
