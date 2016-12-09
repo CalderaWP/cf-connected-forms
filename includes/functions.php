@@ -676,20 +676,22 @@ function cf_form_connector_control_form_load( $out, $form ){
 
 					$process_record[ $form['stage_form'] ] = array();
 					cf_form_connector_set_current_position( $process_record );
-					$message_setting = $connected_form['mailer'][ 'email_message' ];
-					if( false !== strpos( $message_setting, '{summary}' ) ){
-						$magic_parser = new Caldera_Forms_Magic_Summary( $connected_form, $data );
-						if ( ! isset( $connected_form[ 'mailer' ][ 'email_type' ] ) || $connected_form[ 'mailer' ][ 'email_type' ] == 'html' ) {
-							$magic_parser->set_html_mode( true );
+					if (  class_exists( 'Caldera_Forms_Magic_Summary' ) ) {
+						$message_setting = $connected_form[ 'mailer' ][ 'email_message' ];
+						if ( false !== strpos( $message_setting, '{summary}' ) ) {
+							$magic_parser = new Caldera_Forms_Magic_Summary( $connected_form, $data );
+							if ( ! isset( $connected_form[ 'mailer' ][ 'email_type' ] ) || $connected_form[ 'mailer' ][ 'email_type' ] == 'html' ) {
+								$magic_parser->set_html_mode( true );
 
-						}else{
-							$magic_parser->set_html_mode( false );
+							} else {
+								$magic_parser->set_html_mode( false );
+							}
+
+							$magic_parser->set_fields( cf_conn_form_get_all_fields( $connected_form ) );
+
+							$message_setting                               = str_replace( '{summary}', $magic_parser->get_tag(), $message_setting );
+							$connected_form[ 'mailer' ][ 'email_message' ] = $message_setting;
 						}
-
-						$magic_parser->set_fields( cf_conn_form_get_all_fields( $connected_form ) );
-
-						$message_setting = str_replace( '{summary}', $magic_parser->get_tag(), $message_setting );
-						$connected_form[ 'mailer' ][ 'email_message' ] = $message_setting;
 					}
 
 					Caldera_Forms_Save_Final::do_mailer( $connected_form, $entry_id, $data );
