@@ -909,7 +909,7 @@ add_filter( 'caldera_forms_render_get_form', function( $form ){
 
 
 		// setup the js handler if ajax
-		if( $form['form_ajax'] ){
+		if( ! isset( $form['form_ajax'] ) && $form['form_ajax']  ){
 			wp_enqueue_script( 'cf-form-connector-ajax', CF_FORM_CON_URL . 'assets/js/cf-connected-ajax.min.js', array( 'jquery' ), CF_FORM_CON_VER , true );
 			$new_form['custom_callback'] = 'cf_connected_ajax_handler';
 		}
