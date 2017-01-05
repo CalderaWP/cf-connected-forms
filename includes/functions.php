@@ -29,6 +29,26 @@ if ( empty( $_POST[ 'control' ] ) ) {
 //this one is for advanced file fields
 add_filter( 'caldera_forms_get_form', 'cf_conn_form_switch_form_for_file_upload' );
 
+//Possibly replace standard response
+add_action( 'wp_ajax_get_entry', 'cf_form_connector_view_entry', 2 );
+
+
+add_filter( 'caldera_forms_get_form', 'cf_connected_form_merge_fields_filter', 1 );
+function cf_connected_form_merge_fields_filter( $form ){
+	if( ! empty( $form [ 'is_connected_form' ]) ) {
+		if ( ! empty( $form[ 'node' ] ) ) {
+			remove_filter( 'caldera_forms_get_form', 'cf_connected_form_merge_fields_filter', 1 );
+
+			$form[ 'fields' ] = array();
+			$form[ 'fields' ] = cf_form_connector_get_all_fields( $form );
+
+		}
+
+		add_filter( 'caldera_forms_get_form', 'cf_connected_form_merge_fields_filter', 1 );
+
+	}
+	return $form;
+}
 
 /**
  * Initializes the licensing system
@@ -497,6 +517,21 @@ function cf_form_connector_setup_processors( $form ){
 }
 
 /**
+ * When sequence is completed - save
+ *
+ * @since 1.0.8
+ *
+ * @param array $connected_form Connected form config
+ * @param array $data Field data to save
+ * @param array $fields All field configs for fields to save.
+ */
+function cf_form_connector_save_final( $connected_form, $data, $fields ){
+	$form = $connected_form;
+	$form ['fields' ] = $fields;
+	Caldera_Forms_Save_Final::create_entry( $form,$data );
+}
+
+/**
  * Check the processors in connected forms
  *
  * @since 0.2.0
@@ -673,6 +708,7 @@ function cf_form_connector_control_form_load( $out, $form ){
 
 					$entry_id = $process_record[ $connected_form[ 'ID' ] ][ 'entry_id' ];
 					$data =  $process_record[ $form['stage_form'] ][ 'field_values' ];
+					cf_form_connector_save_final( $connected_form, $data, $process_record[ $connected_form[ 'ID' ] ][ 'fields' ], $process_record[ $connected_form[ 'ID' ] ][ 'field_values' ], $entry_id );
 
 					$process_record[ $form['stage_form'] ] = array();
 					cf_form_connector_set_current_position( $process_record );
@@ -687,12 +723,14 @@ function cf_form_connector_control_form_load( $out, $form ){
 								$magic_parser->set_html_mode( false );
 							}
 
-							$magic_parser->set_fields( cf_conn_form_get_all_fields( $connected_form ) );
+							$magic_parser->set_fields( cf_form_connector_get_all_fields( $connected_form ) );
 
 							$message_setting                               = str_replace( '{summary}', $magic_parser->get_tag(), $message_setting );
 							$connected_form[ 'mailer' ][ 'email_message' ] = $message_setting;
 						}
 					}
+
+
 
 					Caldera_Forms_Save_Final::do_mailer( $connected_form, $entry_id, $data );
 				}
@@ -721,6 +759,8 @@ function cf_form_connector_control_form_load( $out, $form ){
 	return $out;
 
 }
+
+
 
 function cf_form_connector_partial_populate_form( $data, $form ){
 
@@ -909,10 +949,13 @@ add_filter( 'caldera_forms_render_get_form', function( $form ){
 
 
 		// setup the js handler if ajax
-		if( ! isset( $form['form_ajax'] ) && $form['form_ajax']  ){
-			wp_enqueue_script( 'cf-form-connector-ajax', CF_FORM_CON_URL . 'assets/js/cf-connected-ajax.min.js', array( 'jquery' ), CF_FORM_CON_VER , true );
-			$new_form['custom_callback'] = 'cf_connected_ajax_handler';
-		}
+		wp_enqueue_script( 'cf-form-connector-ajax', CF_FORM_CON_URL . 'assets/js/cf-connected-ajax.min.js', array( 'jquery' ), CF_FORM_CON_VER , true );
+		$new_form['custom_callback'] = 'cf_connected_ajax_handler';
+
+		//always use ajax
+		$new_form[ 'form_ajax' ] = 1;
+		$form[ 'form_ajax' ] = 1;
+
 		return $new_form;
 	}
 
@@ -1050,22 +1093,7 @@ function cf_form_connector_export_merge(){
 		global $cf_con_fields;
 		$cf_con_fields = array();
 		if( isset( $form[ 'is_connected_form' ] ) && isset( $form[ 'node' ]) ){
-			foreach( $form[ 'node' ] as $node ){
-				$_id = $node[ 'form' ];
-				$_form = Caldera_Forms_Forms::get_form( $_id );
-				if( method_exists( 'Caldera_Forms_Forms', 'get_fields')){
-					$_fields = Caldera_Forms_Forms::get_fields( $_form, false );
-				}else{
-					$_fields = $_form[ 'fields' ];
-				}
-
-				if( empty( $cf_con_fields ) ){
-					$cf_con_fields = $_fields;
-				}else{
-					$cf_con_fields = array_merge( $cf_con_fields, $_fields );
-				}
-			}
-
+			$cf_con_fields = cf_from_connector_merge_fields( $form );
 
 		}
 
@@ -1081,6 +1109,27 @@ function cf_form_connector_export_merge(){
 
 	}
 
+}
+
+function cf_from_connector_merge_fields( $connected_form ){
+	$merged_fields = array();
+	foreach( $connected_form[ 'node' ] as $node ){
+		$_id = $node[ 'form' ];
+		$_form = Caldera_Forms_Forms::get_form( $_id );
+		if( method_exists( 'Caldera_Forms_Forms', 'get_fields')){
+			$_fields = Caldera_Forms_Forms::get_fields( $_form, false );
+		}else{
+			$_fields = $_form[ 'fields' ];
+		}
+
+		if( empty( $merged_fields ) ){
+			$merged_fields = $_fields;
+		}else{
+			$merged_fields = array_merge( $merged_fields, $_fields );
+		}
+	}
+
+	return $merged_fields;
 }
 
 /**
@@ -1152,7 +1201,7 @@ function cf_conn_form_switch_form_for_file_upload( $form ){
 add_filter( 'caldera_forms_get_field_order', 'cf_conn_form_set_order_for_email', 25, 2 );
 function cf_conn_form_set_order_for_email( $order, $form ){
 	if( isset( $form[ 'node' ] ) ){
-		$fields = cf_conn_form_get_all_fields( $form );
+		$fields = cf_form_connector_get_all_fields( $form );
 
 		if( ! empty( $fields ) ){
 			$order = array_keys( $fields );
@@ -1162,8 +1211,16 @@ function cf_conn_form_set_order_for_email( $order, $form ){
 	return $order;
 }
 
-
-function cf_conn_form_get_all_fields( $connected_form ){
+/**
+ * Get all fields of forms in sequence
+ *
+ * @since 1.0.8
+ *
+ * @param array $connected_form Connected form config
+ *
+ * @return array
+ */
+function cf_form_connector_get_all_fields( $connected_form ){
 	$fields = array();
 
 	if( isset( $connected_form[ 'node' ] ) ) {
@@ -1179,3 +1236,63 @@ function cf_conn_form_get_all_fields( $connected_form ){
 
 }
 
+/**
+ * Override entry view UI for Connected Forms
+ *
+ * THIS IS A TERRIBLE HACK, I feel bad, it feels bad, it is bad. Also, it works.
+ *
+ * @since 1.0.8
+ *
+ *  @uses "wp_ajax_get_entry" action
+ */
+function cf_form_connector_view_entry(){
+	if( isset( $_POST, $_POST[ 'nonce' ], $_POST[ 'entry'], $_POST[ 'form' ] ) ){
+
+		$form = Caldera_Forms_Forms::get_form( strip_tags( $_POST[ 'form' ] ) );
+
+		if( empty( $form[ 'is_connected_form'] ) ){
+			return;
+		}
+
+		remove_action( 'wp_ajax_browse_entries', array( Caldera_Forms_Entry_UI::get_instance(), 'view_entries' ) );
+
+		$form[ 'fields' ] = cf_form_connector_get_all_fields( $form );
+
+		if( ! current_user_can( Caldera_Forms::get_manage_cap( 'entry-view', $form )  ) || ! wp_verify_nonce( $_POST[ 'nonce' ], 'cf_view_entry' ) ){
+			wp_send_json_error( $_POST );
+		}
+
+		$entry_id = absint( $_POST[ 'entry' ] );
+
+		if( 0 < $entry_id && is_array( $form ) ){
+			add_filter( 'caldera_forms_view_field_checkbox', function( $field_value, $field, $form  ){
+				//see: https://github.com/CalderaWP/Caldera-Forms/issues/1090
+				$_field_value = maybe_unserialize( str_replace( '&quot;', '"', $field_value ) );
+				if( is_array( $_field_value ) ){
+					$field_value = '';
+					foreach ( $_field_value as $opt => $opt_value ){
+						$field_value .= $field[ 'config' ][ 'option' ][ $opt ][ 'label' ];
+					}
+
+
+				}
+				return $field_value;
+			}, 25, 3 );
+			$entry = Caldera_Forms::get_entry( $entry_id, $form );
+			if( is_wp_error( $entry ) ){
+				wp_send_json_error( $entry );
+			}else{
+				status_header( 200 );
+				wp_send_json( $entry );
+			}
+		}else{
+			wp_send_json_error( $_POST );
+		}
+
+
+
+	}
+
+	wp_send_json_error( $_POST );
+
+}
