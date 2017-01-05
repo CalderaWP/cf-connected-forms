@@ -11,4 +11,6 @@ namespace calderawp\conform\progress;
 
 class cookie {
 
+	const KEY = 'cfcfrm_usr';
+
 }

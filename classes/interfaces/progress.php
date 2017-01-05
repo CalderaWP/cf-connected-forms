@@ -9,6 +9,11 @@
 namespace calderawp\conform;
 
 
-class progress {
+interface progress {
+
+	/**
+	 * @return array
+	 */
+	public function toArray();
 
 }

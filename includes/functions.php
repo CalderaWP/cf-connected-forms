@@ -27,7 +27,7 @@ if ( empty( $_POST[ 'control' ] ) ) {
 }
 
 //this one is for advanced file fields
-add_filter( 'caldera_forms_get_form', 'cf_conn_form_switch_form_for_file_upload' );
+add_filter( 'caldera_forms_get_form', 'cf_form_connector_switch_form_for_file_upload' );
 
 //Possibly replace standard response
 add_action( 'wp_ajax_get_entry', 'cf_form_connector_view_entry', 2 );
@@ -1186,7 +1186,7 @@ add_filter( 'caldera_forms_submission_url', function( $url, $form_id ){
  *
  * @return array|null
  */
-function cf_conn_form_switch_form_for_file_upload( $form ){
+function cf_form_connector_switch_form_for_file_upload( $form ){
 	if( isset( $_REQUEST[ 'control' ], $_REQUEST[ 'con_current' ] ) ){
 		set_query_var( 'cf_api', $_REQUEST[ 'con_current' ] );
 
@@ -1198,8 +1198,8 @@ function cf_conn_form_switch_form_for_file_upload( $form ){
 }
 
 
-add_filter( 'caldera_forms_get_field_order', 'cf_conn_form_set_order_for_email', 25, 2 );
-function cf_conn_form_set_order_for_email( $order, $form ){
+add_filter( 'caldera_forms_get_field_order', 'cf_form_connector_set_order_for_email', 25, 2 );
+function cf_form_connector_set_order_for_email( $order, $form ){
 	if( isset( $form[ 'node' ] ) ){
 		$fields = cf_form_connector_get_all_fields( $form );
 
