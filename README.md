@@ -11,6 +11,8 @@ Requires Caldera Forms 1.3.1 beta 1 or later.
 We are experimenting with using public git repos for commercial products. Support will only be provided via our [support system](https://calderawp.com/support/) which requires a valid license. If you are using this plugin please choose to purchase a license to recive support, support our work and 
 enable live updates.
 
+<strong>Don't use the download link, it's not going to give you a proper build.</strong>
+
 [Feel free to report bug here](https://github.com/CalderaWP/cf-connected-forms/issues) -- pull requests are accepted.
 
 
