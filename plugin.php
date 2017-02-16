@@ -36,6 +36,22 @@ define( 'CF_FORM_CON_BASENAME', plugin_basename( __FILE__ ) );
 // Load instance
 add_action( 'plugins_loaded', 'cf_form_connector_init', 1 );
 function cf_form_connector_init(){
+	if( ! class_exists( 'Caldera_Forms_Entry_Update' ) ){
+		if ( is_admin() || defined( 'DOING_AJAX' ) && DOING_AJAX ) {
+			include_once CF_FORM_CON_PATH . 'vendor/calderawp/dismissible-notice/src/functions.php';
+		}
+
+		if ( is_admin() ) {
+
+			$message = __( sprintf( 'Connected Forms for Caldera Forms requires Caldera Forms 1.5 or later. Current version is %2s.', CFCORE_VER ), 'cf-form-connector' );
+			echo caldera_warnings_dismissible_notice( $message, true, 'activate_plugins', 'con_forms_cf_ver' );
+		}
+
+		return;
+
+
+	}
+
 	if (  ! version_compare( PHP_VERSION, '5.3.0', '>=' ) ) {
 		if ( is_admin() || defined( 'DOING_AJAX' ) && DOING_AJAX ) {
 			include_once CF_FORM_CON_PATH . 'vendor/calderawp/dismissible-notice/src/functions.php';
@@ -43,9 +59,8 @@ function cf_form_connector_init(){
 
 		if ( is_admin() ) {
 			//BIG nope nope nope!
-
 			$message = __( sprintf( 'Connected Forms for Caldera Forms requires PHP version %1s or later. We strongly recommend PHP 5.5 or later for security and performance reasons. Current version is %2s.', '5.3.0', PHP_VERSION ), 'cf-form-connector' );
-			echo caldera_warnings_dismissible_notice( $message, true, 'activate_plugins' );
+			echo caldera_warnings_dismissible_notice( $message, true, 'activate_plugins', 'con_forms_php_ver' );
 		}
 
 	}else{
