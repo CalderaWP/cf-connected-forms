@@ -260,7 +260,6 @@ function cf_form_connector_init_current_position(){
 function cf_form_connector_get_current_position(){
 		if(is_user_logged_in()){
 			$user_id = get_current_user_id();
-			//delete_user_meta( $user_id, CF_FORM_CON_SLUG );
 			$data = get_user_meta( $user_id , CF_FORM_CON_SLUG, true );
 
 		}else{
@@ -402,9 +401,8 @@ function cf_form_connector_setup_processors( $form ){
 			cf_form_connector_set_current_position( $process_record );
 
 			// check for ajax
-			if( !empty( $stage['form_ajax'] ) ){
-				wp_send_json( array( 'target' => $stage['ID'] . '_' . (int) $_POST['_cf_frm_ct'], 'form' => Caldera_Forms::render_form( $stage ) ) );
-			}
+			wp_send_json( array( 'target' => $stage['ID'] . '_' . (int) $_POST['_cf_frm_ct'], 'form' => Caldera_Forms::render_form( $stage ) ) );
+
 			
 		}
 
@@ -430,8 +428,10 @@ function cf_form_connector_setup_processors( $form ){
 				$new_entry['user_id'] = get_current_user_id();
 			}
 
-			$wpdb->insert($wpdb->prefix . 'cf_form_entries', $new_entry);
-			$entryid = $wpdb->insert_id;
+			$entry = new Caldera_Forms_Entry_Entry( (object) $new_entry );
+			$e = new Caldera_Forms_Entry( $stage, false, $entry );
+			$e->save();
+			$entryid = $e->get_entry_id();
 			$process_record = array();
 			$process_record[ $stage['ID'] ] = array(
 				'entry_id' 		=>	$entryid,
@@ -485,10 +485,10 @@ function cf_form_connector_setup_processors( $form ){
 				'type' 		=> 'use',
 				'group'		=>	$condition['group']
 			);
-		}				
+		}
 		$has_condition_points = true;
 	}
-	
+
 	if( empty( $has_condition_points ) && $process_record[ $stage['ID'] ]['current_form'] == $stage['ID'] ){
 		// last in process!
 		$form = $stage;
@@ -525,10 +525,48 @@ function cf_form_connector_setup_processors( $form ){
  * @param array $data Field data to save
  * @param array $fields All field configs for fields to save.
  */
-function cf_form_connector_save_final( $connected_form, $data, $fields ){
+function cf_form_connector_save_final( $connected_form, $data, $fields, $entry_id ){
 	$form = $connected_form;
 	$form ['fields' ] = $fields;
-	Caldera_Forms_Save_Final::create_entry( $form,$data );
+	if( is_array( $entry_id ) ){
+		if( isset( $entry_id[ '_entry_id' ] ) ){
+			$entry_id = $entry_id[ '_entry_id' ];
+		}else{
+			$entry_id = null;
+		}
+	}
+	if ( ! $entry_id ) {
+		Caldera_Forms_Save_Final::create_entry( $form, $data );
+	}else{
+		global $processed_data;
+		$processed_data[ $form[ 'ID' ] . '_' . $entry_id ] = $data;
+		$entry = new Caldera_Forms_Entry( $form, $entry_id );
+		foreach ( $data as $field_id => $value ){
+			if( ! isset( $fields[ $field_id ] ) ){
+				continue;
+			}
+
+			$field = $fields[ $field_id ];
+			if( Caldera_Forms_Fields::not_support( Caldera_Forms_Field_Util::get_type( $field ) , 'entry_list' ) ){
+				continue;
+			}
+			$slug = $field[ 'slug' ];
+			$_value = array(
+				'entry_id' => $entry_id,
+				'value' => $value,
+				'field_id' => $field_id,
+				'slug' => $slug
+
+			);
+			$field_value = new Caldera_Forms_Entry_Field( (object) $_value );
+			$entry->add_field( $field_value );
+		}
+
+		$entry->save();
+		Caldera_Forms_Entry_Update::update_entry_status( 'active', $entry_id );
+
+	}
+
 }
 
 /**
@@ -708,7 +746,7 @@ function cf_form_connector_control_form_load( $out, $form ){
 
 					$entry_id = $process_record[ $connected_form[ 'ID' ] ][ 'entry_id' ];
 					$data =  $process_record[ $form['stage_form'] ][ 'field_values' ];
-					cf_form_connector_save_final( $connected_form, $data, $process_record[ $connected_form[ 'ID' ] ][ 'fields' ], $process_record[ $connected_form[ 'ID' ] ][ 'field_values' ], $entry_id );
+					cf_form_connector_save_final( $connected_form, $data, $process_record[ $connected_form[ 'ID' ] ][ 'fields' ], $entry_id );
 
 					$process_record[ $form['stage_form'] ] = array();
 					cf_form_connector_set_current_position( $process_record );
