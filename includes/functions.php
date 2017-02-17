@@ -1414,21 +1414,21 @@ function cf_form_connector_prev_magic_tag( $return_value, $tag, $magics, $entry_
 
 	$slug_or_id = $parts[1];
 
-	$forms = cf_form_connector_get_current_position();
-	foreach ( $forms as $form_id => $form ){
-		if( ! isset( $form[ 'fields' ] ) || ! isset( $form[ 'field_values' ] ) ){
-			continue;
-		}
-		$field = Caldera_Forms_Field_Util::get_field_by_slug(  $slug_or_id, $form );
-		if( false !== $field ){
-			if( isset( $forms[ $form_id ][ 'field_values' ][ $field['ID'] ] ) ){
-				return  $forms[ $form_id ][ 'field_values' ][ $field['ID'] ];
+	$tracking = cf_form_connector_get_current_position();
+	if( isset( $tracking[ $form[ 'ID'] ]  ) ){
+		$sequence = $tracking[ $form[ 'ID'] ];
+		foreach ( $sequence[ 'fields' ] as $field_id => $field ){
+			if( $slug_or_id === $field[ 'slug' ] ){
+				if( isset( $sequence[ 'field_values' ][ $field['ID'] ] ) ){
+					return  $sequence[ 'field_values' ][ $field['ID'] ];
 
+				}
 			}
 
 		}
 
-		foreach ( $form[ 'field_values' ] as $field_id => $value ){
+
+		foreach ( $sequence[ 'field_values' ] as $field_id => $value ){
 			if( $slug_or_id == $field_id ){
 				return $value;
 
@@ -1436,8 +1436,10 @@ function cf_form_connector_prev_magic_tag( $return_value, $tag, $magics, $entry_
 
 		}
 
-
 	}
+
+
+
 
 
 	return $return_value;
