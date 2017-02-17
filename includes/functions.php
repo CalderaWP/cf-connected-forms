@@ -357,6 +357,7 @@ function cf_form_connector_setup_processors( $form ){
 
 	// fetch the connected stage form
 	$base_form = Caldera_Forms_Forms::get_form( cf_form_connector_get_base_form( $form ) );
+
 	if( !empty( $_POST['cffld_stage'] ) ){
 		$current_form = Caldera_Forms_Sanitize::sanitize( $_POST['cffld_stage'] );
 		// check this is part of the flow
@@ -433,16 +434,26 @@ function cf_form_connector_setup_processors( $form ){
 			$entry = new Caldera_Forms_Entry_Entry( (object) $new_entry );
 			$e = new Caldera_Forms_Entry( $stage, false, $entry );
 			$e->save();
-			$entryid = $e->get_entry_id();
+			$entry_id = $e->get_entry_id();
 			$process_record = array();
 			$process_record[ $stage['ID'] ] = array(
-				'entry_id' 		=>	$entryid,
+				'entry_id' 		=>	$entry_id,
 				'fields'		=>	array(),
 				'field_values'	=>	array(),
 				'completed'		=>	false,
 				'current_form'	=>	$form['ID']
 			);
 			cf_form_connector_set_current_position( $process_record );
+
+			/**
+			 * Runs when the first step in a Connected Form is submitted
+			 *
+			 * @since 1.1.0
+			 *
+			 * @param string $connected_form_id ID of connected form
+			 * @param int $entry_id If of entry
+			 */
+			do_action( 'cf_form_connector_sequence_started', $form[ 'ID' ], $entry_id );
 		}
 	}
 
@@ -530,6 +541,19 @@ function cf_form_connector_setup_processors( $form ){
 function cf_form_connector_save_final( $connected_form, $data, $fields, $entry_id ){
 	$form = $connected_form;
 	$form ['fields' ] = $fields;
+
+	/**
+	 * Change data to save in Connected Forms entry
+	 *
+	 * Runs when sequence is completed, before data is saved
+	 *
+	 * @since 1.1.0
+	 *
+	 * @param array $data Values for each field in sequence
+	 * @param array $form Form config for connected form
+	 * @param int $entry_id ID of entry
+	 */
+	$data = apply_filters( 'cf_form_connector_sequence_complete_pre_save', $data, $form, $entry_id );
 	if( is_array( $entry_id ) ){
 		if( isset( $entry_id[ '_entry_id' ] ) ){
 			$entry_id = $entry_id[ '_entry_id' ];
@@ -569,6 +593,16 @@ function cf_form_connector_save_final( $connected_form, $data, $fields, $entry_i
 
 	}
 
+	/**
+	 * Runs after a connected forms sequence is completed and saved in database
+	 *
+	 * @since 1.1.0
+	 *
+	 * @param array $form Form config for connected form
+	 * @param array $data Values for each field in sequence
+	 * @param int $entry_id ID of entry
+	 */
+	do_action( 'cf_form_connector_sequence_complete', $form, $data, $entry_id );
 }
 
 /**
@@ -734,7 +768,24 @@ function cf_form_connector_control_form_load( $out, $form ){
 				wp_send_json( $out );
 			}
 
-			wp_send_json( array( 'target' => $form['stage_form'] . '_' . (int) $_POST['_cf_frm_ct'], 'form' => Caldera_Forms::render_form( $stage_form ) ) );
+			$connected_form_id = $stage_form[ 'ID' ];
+			$entry_id = $process_record[ $connected_form_id ][ 'entry_id' ];
+
+			/**
+			 * Runs when a form in a Connected Forms sequence, which is not the last form is submitted
+			 *
+			 * @since 1.1.0
+			 *
+			 * @param string $connected_form_id ID of connected form
+			 * @param string $current_form_id The ID of the form in sequence that was just submitted
+			 * @param int $entry_id If of entry
+			 */
+			do_action( 'cf_form_connector_sequence_advanced', $connected_form_id, $form[ 'ID' ], $entry_id );
+
+			wp_send_json( array(
+				'target' => $form[ 'stage_form' ] . '_' . (int) $_POST[ '_cf_frm_ct' ],
+				'form'   => Caldera_Forms::render_form( $stage_form )
+			) );
 		}else{
 			// is current = stage ? yup last form last process.
 			if( empty( $form['form_connection'] )
@@ -1382,6 +1433,7 @@ function cf_form_connector_prev_magic_tag( $return_value, $tag, $magics, $entry_
 				return $value;
 
 			}
+
 		}
 
 
