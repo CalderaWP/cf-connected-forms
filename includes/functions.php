@@ -23,7 +23,7 @@ if ( empty( $_POST[ 'control' ] ) ) {
 	add_action( 'caldera_forms_redirect', 'cf_form_connector_control_form_load_manual', 25, 3 );
 	add_action( 'admin_init', 'cf_connected_form_init_license' );
 	add_action( 'init', 'cf_form_connector_export_merge' );
-	add_filter( 'caldera_forms_do_magic_tag', 'cf_form_connector_magic_tag' );
+	add_filter( 'caldera_forms_pre_do_bracket_magic', 'cf_form_connector_prev_magic_tag', 25, 5 );
 }
 
 //this one is for advanced file fields
@@ -146,10 +146,12 @@ add_filter( 'caldera_forms_get_panel_extensions', function( $panels ){
  * Add a magic tag for previous values
  *
  * @uses "caldera_forms_do_magic_tag"
+ * @deprecated 1.1.0
  *
  * @since 1.0.4
  */
 function cf_form_connector_magic_tag( $tag ) {
+	_deprecated_function( __FUNCTION__, '1.1.0' );
 	global $form;
 	
 	$parts = explode( ':', $tag );
@@ -1332,5 +1334,60 @@ function cf_form_connector_view_entry(){
 	}
 
 	wp_send_json_error( $_POST );
+
+}
+
+/**
+ * Parse {prev:*} magic tag
+ *
+ * @since 1.1.0
+ *
+ * @uses "caldera_forms_pre_do_bracket_magic" filter
+ *
+ * @param $return_value
+ * @param $tag
+ * @param $magics
+ * @param $entry_id
+ * @param $form
+ *
+ * @return mixed
+ */
+function cf_form_connector_prev_magic_tag( $return_value, $tag, $magics, $entry_id, $form ){
+	if( 2 != count( $magics ) || ! isset( $magics[1][0] ) || false === strpos( $tag, '{prev' ) ){
+		return $return_value;
+	}
+	$parts = explode( ':', $magics[1][0] );
+	if (  empty( $parts[1] ) ) {
+		return $return_value;
+	}
+
+	$slug_or_id = $parts[1];
+
+	$forms = cf_form_connector_get_current_position();
+	foreach ( $forms as $form_id => $form ){
+		if( ! isset( $form[ 'fields' ] ) || ! isset( $form[ 'field_values' ] ) ){
+			continue;
+		}
+		$field = Caldera_Forms_Field_Util::get_field_by_slug(  $slug_or_id, $form );
+		if( false !== $field ){
+			if( isset( $forms[ $form_id ][ 'field_values' ][ $field['ID'] ] ) ){
+				return  $forms[ $form_id ][ 'field_values' ][ $field['ID'] ];
+
+			}
+
+		}
+
+		foreach ( $form[ 'field_values' ] as $field_id => $value ){
+			if( $slug_or_id == $field_id ){
+				return $value;
+
+			}
+		}
+
+
+	}
+
+
+	return $return_value;
 
 }
