@@ -10,7 +10,7 @@
  * Plugin Name: Connected Caldera Forms
  * Plugin URI:  https://calderawp.com/downloads/caldera-forms-connector
  * Description: Connect multiple Caldera Forms into a sequence of forms
- * Version: 1.0.8
+ * Version: 1.1.0-b-1
  * Author:      Josh Pollock & David Cramer <Calderasaurus@CalderaWP.com>
  * Author URI:  http://calderawp.com
  * Text Domain: cf-form-connector
@@ -28,7 +28,7 @@ if ( ! defined( 'WPINC' ) ) {
 define( 'CF_FORM_CON_PATH',  plugin_dir_path( __FILE__ ) );
 define( 'CF_FORM_CON_URL',  plugin_dir_url( __FILE__ ) );
 define( 'CF_FORM_CON_SLUG', '_users_connected_forms_dev' );
-define( 'CF_FORM_CON_VER', '1.0.8' );
+define( 'CF_FORM_CON_VER', '1.1.0-b-1' );
 define( 'CF_FORM_CON_CORE', dirname( __FILE__ )  );
 define( 'CF_FORM_CON_BASENAME', plugin_basename( __FILE__ ) );
 
