@@ -67,6 +67,7 @@ function cf_form_connector_init(){
 		// load dependencies
 		include_once trailingslashit( CF_FORM_CON_PATH ) . 'vendor/autoload.php';
 		include trailingslashit( CF_FORM_CON_PATH ) . 'includes/functions.php';
+		include trailingslashit( CF_FORM_CON_PATH ) . 'includes/partial.php';
 		add_filter('caldera_forms_get_form_processors', 'cf_form_connector_register');
 
 	}

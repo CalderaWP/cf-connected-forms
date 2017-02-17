@@ -24,6 +24,8 @@ if ( empty( $_POST[ 'control' ] ) ) {
 	add_action( 'admin_init', 'cf_connected_form_init_license' );
 	add_action( 'init', 'cf_form_connector_export_merge' );
 	add_filter( 'caldera_forms_pre_do_bracket_magic', 'cf_form_connector_prev_magic_tag', 25, 5 );
+	add_action( 'cf_form_connector_sequence_started', array( 'CF_Con_Form_Partial', 'status_hook' ), 8, 2 );
+	add_action( 'cf_form_connector_sequence_advanced', array( 'CF_Con_Form_Partial', 'add_values_to_main_entry' ), 8, 4  );
 }
 
 //this one is for advanced file fields
@@ -129,6 +131,16 @@ add_filter( 'caldera_forms_get_panel_extensions', function( $panels ){
 			$panels['form_layout']['tabs']['layout']['actions'] = array();
 			$panels['form_layout']['tabs']['layout']['side_panel'] = null;
 			$panels['form_layout']['tabs']['layout']['canvas'] = CF_FORM_CON_PATH . 'includes/templates/connection-builder.php';
+
+			//$panels['form_layout']['tabs']['layout']['canvas'] = CF_FORM_CON_PATH . 'includes/templates/partial.php';
+			$panels['form_layout']['tabs'][ 'partial' ] = array(
+				'name' => __( 'Partial Submissions', 'connected-forms' ),
+				'label' => __( 'Settings for partial submissions', 'connected_Forms' ),
+				'location' => 'lower',
+				'actions' => array(),
+				'side_panel' => null,
+				'canvas' => CF_FORM_CON_PATH . 'includes/templates/partials.php'
+			);
 
 			// add scripts
 			wp_enqueue_script( 'jsplumb', CF_FORM_CON_URL . 'assets/js/jsPlumb-1.7.10-min.js', array(), CF_FORM_CON_VER );
@@ -453,7 +465,7 @@ function cf_form_connector_setup_processors( $form ){
 			 * @param string $connected_form_id ID of connected form
 			 * @param int $entry_id If of entry
 			 */
-			do_action( 'cf_form_connector_sequence_started', $form[ 'ID' ], $entry_id );
+			do_action( 'cf_form_connector_sequence_started', $stage['ID'], $entry_id );
 		}
 	}
 
@@ -567,26 +579,7 @@ function cf_form_connector_save_final( $connected_form, $data, $fields, $entry_i
 		global $processed_data;
 		$processed_data[ $form[ 'ID' ] . '_' . $entry_id ] = $data;
 		$entry = new Caldera_Forms_Entry( $form, $entry_id );
-		foreach ( $data as $field_id => $value ){
-			if( ! isset( $fields[ $field_id ] ) ){
-				continue;
-			}
-
-			$field = $fields[ $field_id ];
-			if( Caldera_Forms_Fields::not_support( Caldera_Forms_Field_Util::get_type( $field ) , 'entry_list' ) ){
-				continue;
-			}
-			$slug = $field[ 'slug' ];
-			$_value = array(
-				'entry_id' => $entry_id,
-				'value' => $value,
-				'field_id' => $field_id,
-				'slug' => $slug
-
-			);
-			$field_value = new Caldera_Forms_Entry_Field( (object) $_value );
-			$entry->add_field( $field_value );
-		}
+		$entry = cf_form_connector_add_fields_to_entry(  $entry, $fields, $data );
 
 		$entry->save();
 		Caldera_Forms_Entry_Update::update_entry_status( 'active', $entry_id );
@@ -603,6 +596,47 @@ function cf_form_connector_save_final( $connected_form, $data, $fields, $entry_i
 	 * @param int $entry_id ID of entry
 	 */
 	do_action( 'cf_form_connector_sequence_complete', $form, $data, $entry_id );
+}
+
+/**
+ * Add fields to entry object
+ *
+ * NOTE: Does not actually save data
+ *
+ * @since 1.1.0
+ *
+ * @param Caldera_Forms_Entry $entry Entry object
+ * @param array $fields Field configs for fields to save
+ * @param array $field_data Data for each field, keyed by field ID.
+ *
+ * @return Caldera_Forms_Entry
+ */
+function cf_form_connector_add_fields_to_entry( Caldera_Forms_Entry $entry, array $fields, array $field_data ) {
+	$entry_id = $entry->get_entry_id();
+	foreach ( $field_data as $field_id => $value ) {
+		if ( ! isset( $fields[ $field_id ] ) ) {
+			continue;
+		}
+
+		$field = $fields[ $field_id ];
+		if ( Caldera_Forms_Fields::not_support( Caldera_Forms_Field_Util::get_type( $field ), 'entry_list' ) ) {
+			continue;
+		}
+		$slug        = $field[ 'slug' ];
+		$_value      = array(
+			'entry_id' => $entry_id,
+			'value'    => $value,
+			'field_id' => $field_id,
+			'slug'     => $slug
+
+		);
+		$field_value = new Caldera_Forms_Entry_Field( (object) $_value );
+		$entry->add_field( $field_value );
+
+	}
+
+	return $entry;
+
 }
 
 /**
@@ -779,8 +813,9 @@ function cf_form_connector_control_form_load( $out, $form ){
 			 * @param string $connected_form_id ID of connected form
 			 * @param string $current_form_id The ID of the form in sequence that was just submitted
 			 * @param int $entry_id If of entry
+			 * @param array $sequence_data Data for current sequence
 			 */
-			do_action( 'cf_form_connector_sequence_advanced', $connected_form_id, $form[ 'ID' ], $entry_id );
+			do_action( 'cf_form_connector_sequence_advanced', $connected_form_id, $form[ 'ID' ], $entry_id, $process_record[ $connected_form_id ] );
 
 			wp_send_json( array(
 				'target' => $form[ 'stage_form' ] . '_' . (int) $_POST[ '_cf_frm_ct' ],
@@ -1427,7 +1462,6 @@ function cf_form_connector_prev_magic_tag( $return_value, $tag, $magics, $entry_
 
 		}
 
-
 		foreach ( $sequence[ 'field_values' ] as $field_id => $value ){
 			if( $slug_or_id == $field_id ){
 				return $value;
@@ -1443,5 +1477,37 @@ function cf_form_connector_prev_magic_tag( $return_value, $tag, $magics, $entry_
 
 
 	return $return_value;
+
+}
+
+/**
+ * Get field data for one form in connected form sequence
+ *
+ * @since 1.1.0
+ *
+ * @param array $sequence_data Current data for sequence
+ * @param string $current_form_id Current form ID
+ *
+ * @return array
+ */
+function cf_form_connector_current_fields( $sequence_data, $current_form_id ){
+	if( ! isset( $sequence_data[ $current_form_id ] ) ){
+		return array();
+	}
+	$form = Caldera_Forms_Forms::get_form( $current_form_id );
+	if( empty( $form ) ){
+		return array();
+	}
+	$fields = Caldera_Forms_Forms::get_fields( $form, false );
+	$field_ids = wp_list_pluck( $fields, 'ID' );
+	$field_values = array();
+	foreach ( $sequence_data[ 'field_values'] as $field_id => $value ){
+		if( in_array( $field_id, $field_ids ) ){
+			$field_values[ $field_id ] = $value;
+		}
+	}
+
+	return $field_values;
+
 
 }
