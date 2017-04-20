@@ -492,12 +492,18 @@ function cf_form_connector_setup_processors( $form ){
 			$hasBack = true;
 		}
 
+		$next_form_id = $stage['node'][ $condition['connect'] ]['form'];
+		$_entry_id = null;
+		if( isset( $process_record[ $next_form_id ], $process_record[ $next_form_id ][ 'id' ] ) ){
+			$_entry_id = $process_record[ $next_form_id ][ 'id' ];
+		}
 		$form['processors'][ $processor_id ] = array(
 			'ID' 			=> $processor_id,
 			'type' 			=> 'form-connector',
 			'config' 		=> array(
-				'next_form_id'			=> $stage['node'][ $condition['connect'] ]['form'],
-				'back_button'			=> $hasBack
+				'next_form_id' => $next_form_id,
+				'back_button'  => $hasBack,
+				'entry_id'     => $_entry_id
 			),
 			'runtimes' => array(
 				'insert' => true
@@ -511,6 +517,7 @@ function cf_form_connector_setup_processors( $form ){
 				'group'		=>	$condition['group']
 			);
 		}
+		CF_Con_Form_PTrack::set_config( $form['processors'][ $processor_id ][ 'config' ] );
 		$has_condition_points = true;
 	}
 
@@ -738,7 +745,7 @@ function cf_form_connector_control_form_load_manual($type, $url, $form ){
 	if( !empty( $form['stage_form'] ) ){
 		$stage_form = Caldera_Forms_Forms::get_form( $form['stage_form'] );
 		$process_record = cf_form_connector_get_current_position();
-		
+		$form = CF_Con_Form_PTrack::maybe_add_connections( $form );
 		if( !empty( $form['form_connection'] ) ){
 
 			$process_record[ $form['stage_form'] ][ $form['ID'] ] = array(			
@@ -752,6 +759,26 @@ function cf_form_connector_control_form_load_manual($type, $url, $form ){
 			cf_form_connector_set_current_position( $process_record );
 		}
 	}
+}
+
+/**
+ * @param $form
+ *
+ * @return mixed
+ */
+function cf_form_connector_maybe_add_connections( $form )
+{
+	if ( empty( $form[ 'form_connection' ] ) ) {
+		$_processor = CF_Con_Form_PTrack::get_config();
+		if ( ! empty( $_processor ) ) {
+			$form[ 'form_connection' ] = $_processor[ 'config' ];
+
+
+		}
+
+	}
+
+	return $form;
 }
 
 /**
@@ -777,7 +804,7 @@ function cf_form_connector_control_form_load( $out, $form ){
 		$process_record = cf_form_connector_get_current_position();
 		$process_record[ $form['stage_form'] ][ 'fields' ] = array_merge( ( array ) $process_record[ $form['stage_form'] ]['fields'], $form['fields'] );
 		$process_record[ $form['stage_form'] ][ 'field_values' ] = array_merge( ( array ) $process_record[ $form['stage_form'] ]['field_values'], Caldera_Forms::get_submission_data( $form ) );
-
+		$form = CF_Con_Form_PTrack::maybe_add_connections( $form );
 		if( !empty( $form['form_connection'] ) ){
 
 			$process_record[ $form['stage_form'] ][ $form['ID'] ] = array(
@@ -1126,9 +1153,9 @@ function cf_form_connector_register($processors){
  * @return array
  */
 function cf_form_connector_process( $config, $form ) {
-	global $form;
 	$form['form_connection'] = $config;
 	$form['form_connection']['entry_id'] = Caldera_Forms::get_field_data( '_entry_id', $form );
+	CF_Con_Form_PTrack::set_config($form['form_connection']);
 }
 
 /**
@@ -1511,3 +1538,15 @@ function cf_form_connector_current_fields( $sequence_data, $current_form_id ){
 
 
 }
+
+/**
+ * Make sure that the extra fields we add for progress are always hidden
+ *
+ * @since 1.1.1
+ */
+add_filter( 'caldera_forms_field_attributes', function( $attrs, $field, $form){
+	if( isset( $attrs[ 'data-field' ] ) && 'cffld_stage' == $attrs[ 'data-field' ] ){
+		$attrs[ 'type' ] = 'hidden';
+	}
+	return $attrs;
+}, 10, 3 );
