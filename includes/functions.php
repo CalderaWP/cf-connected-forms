@@ -34,6 +34,26 @@ add_filter( 'caldera_forms_get_form', 'cf_conn_form_switch_form_for_file_upload'
 //Possibly replace standard response
 add_action( 'wp_ajax_get_entry', 'cf_form_connector_view_entry', 2 );
 
+/**
+ * Make sure we update ID in tracking data.
+ *
+ * @since 1.1.1
+ */
+add_action( 'caldera_forms_submit_process_end', function( $form, $referrer, $process_id, $entry_id ){
+	if( isset ( $_GET[ 'con_current' ], $_GET[ 'con_base' ] ) ){
+		$current = $_GET[ 'con_current' ];
+		$base = $_GET[ 'con_base' ];
+		if( $current != $form[ 'ID' ] ){
+			return;
+		}
+	}else{
+		return;
+	}
+
+
+	cf_form_connected_write_id_to_progress( $entry_id, $base, $current );
+}, 25, 4 );
+
 
 add_filter( 'caldera_forms_get_form', 'cf_connected_form_merge_fields_filter', 1 );
 function cf_connected_form_merge_fields_filter( $form ){
@@ -1537,6 +1557,26 @@ function cf_form_connector_current_fields( $sequence_data, $current_form_id ){
 	return $field_values;
 
 
+}
+
+/**
+ * Write the entry ID to sequence data
+ *
+ * @since 1.1.1
+ *
+ * @param int $entry_id Entry ID of sub-form
+ * @param string $base ID of connected form
+ * @param string $current ID of connected form.
+ */
+function cf_form_connected_write_id_to_progress( $entry_id, $base, $current ){
+	$process_record = cf_form_connector_get_current_position();
+	if ( ! empty( $process_record ) && isset( $process_record[ $base ] ) ) {
+		if ( ! isset( $process_record[ $base ][ $current ] ) ) {
+			$process_record[ $base ][ $current ] = array();
+		}
+		$process_record[ $base ][ $current ][ 'id' ] = $entry_id;
+	}
+	cf_form_connector_set_current_position( $process_record );
 }
 
 /**
