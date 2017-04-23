@@ -3,18 +3,24 @@ var cf_connected_ajax_handler;
 jQuery( function( $ ){
 
 	$( document ).on( 'click', '.cffld_backnav_btn', function(){
-		var clicked = $(this),
-			wrap = clicked.closest('.caldera_forms_form');
-		
-		wrap.find('[required]').removeAttr('required');
-		$('#' + $(this).data('field') + '_input' ).val(1);
+		var $clicked = $(this),
+			$form = $clicked.closest('.caldera_forms_form');
+
+		//remove required
+		$form.find('[required]').removeAttr('required');
+
+		//set the back nav field to true
+		$('#' + $clicked.data('field') + '_input' ).val(1);
+
+
+		//submit
+		$form.submit();
 	} );
 
-
 	cf_connected_ajax_handler = function( obj ){
-		var target = $( '#' + obj.target ),
+		var $target = $( '#' + obj.target ),
 			inst_id = $( obj.form ).find('form.caldera_forms_form').prop('id');
-		target.replaceWith( obj.form );
+		$target.replaceWith( obj.form );
 		var $newForm =  $( document.getElementById( inst_id ) );
 
 		//scroll to top and focus first field
