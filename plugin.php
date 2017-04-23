@@ -36,6 +36,10 @@ define( 'CF_FORM_CON_BASENAME', plugin_basename( __FILE__ ) );
 // Load instance
 add_action( 'plugins_loaded', 'cf_form_connector_init', 1 );
 function cf_form_connector_init(){
+	//If ! haz Caldera Forms stop
+	if( ! defined( 'CFCORE_VER' ) ){
+		return;
+	}
 	if( ! class_exists( 'Caldera_Forms_Entry_Update' ) ){
 		if ( is_admin() || defined( 'DOING_AJAX' ) && DOING_AJAX ) {
 			include_once CF_FORM_CON_PATH . 'vendor/calderawp/dismissible-notice/src/functions.php';
@@ -74,17 +78,3 @@ function cf_form_connector_init(){
 	}
 
 }
-//add activation hook
-add_action( 'activate_' . CF_FORM_CON_BASENAME,  'cf_form_connector_activate' );
-
-/**
- * Plugin activation callback.
- */
-function cf_form_connector_activate(){
-	global $wp_version;
-	wp_remote_get( add_query_arg( array( 'wp' => urlencode( $wp_version ), 'php' => urlencode( PHP_VERSION ), 'url' => urlencode( site_url() ) ),  'http://apicaldera.wpengine.com/wp-json/calderawp_api/v2/notices'  ) );
-};
-
-
-
-
