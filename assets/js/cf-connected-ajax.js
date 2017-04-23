@@ -15,7 +15,15 @@ jQuery( function( $ ){
 		var target = $( '#' + obj.target ),
 			inst_id = $( obj.form ).find('form.caldera_forms_form').prop('id');
 		target.replaceWith( obj.form );
-		alert( inst_id );
+		var $newForm =  $( document.getElementById( inst_id ) );
+
+		//scroll to top and focus first field
+		$('html, body').animate({
+			scrollTop: $newForm.offset().top - 200
+		}, 750, function() {
+			$newForm.find( 'input:visible:enabled:first' ).focus();
+		});
+
 		if( typeof caldera_conditionals === "undefined" || typeof caldera_conditionals[inst_id] === "undefined"){
 			return;
 		}
