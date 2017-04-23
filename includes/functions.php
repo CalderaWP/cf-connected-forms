@@ -1041,6 +1041,19 @@ add_filter( 'caldera_forms_render_get_form', function( $form ){
 
 		}
 
+		//Remove all submit/back/next buttons
+		//No multi-page forms and no seperate submits
+		foreach( Caldera_Forms_Forms::get_fields( $new_form, false ) as $field_id => $field ){
+			if( 'button' == Caldera_Forms_Field_Util::get_type( $field, $new_form ) && in_array( $field[ 'config' ][ 'type' ], array(
+					'submit',
+					'back',
+					'next',
+				) ) ){
+				unset( $new_form[ 'fields' ][ $field_id ] );
+			}
+
+		}
+
 		$rows     = explode( '|', $new_form[ 'layout_grid' ][ 'structure' ] );
 		$last_row = count( $rows ) + 1;
 		if(count( $pages ) <= 1 ) {
@@ -1115,6 +1128,8 @@ add_filter( 'caldera_forms_render_get_form', function( $form ){
 				'default' => $current_form
 			)
 		);
+
+
 		$new_form['connected_stage'] = true;
 		// add filter to register the nav buttoms ( this is so that they dont show in form builder )
 		add_filter('caldera_forms_get_field_types', 'cf_form_connector_register_fields');
