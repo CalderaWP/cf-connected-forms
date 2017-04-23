@@ -7,6 +7,9 @@ module.exports = function (grunt) {
         shell: {
             composer: {
                 command: 'composer update'
+            },
+            gulp: {
+                command: 'gulp'
             }
         },
         clean: {
@@ -128,7 +131,7 @@ module.exports = function (grunt) {
 
     //release tasks
     grunt.registerTask( 'version_number', [ 'replace:core_file' ] );
-    grunt.registerTask( 'pre_vcs', [ 'shell:composer', 'version_number', 'copy', 'compress' ] );
+    grunt.registerTask( 'pre_vcs', [ 'shell:composer', 'shell:gulp', 'version_number', 'copy', 'compress' ] );
     grunt.registerTask( 'do_git', [ 'gitadd', 'gitcommit', 'gittag', 'gitpush' ] );
     grunt.registerTask( 'just_build', [  'copy', 'compress' ] );
 

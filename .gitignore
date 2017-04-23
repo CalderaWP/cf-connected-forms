@@ -1,3 +1,4 @@
 node_modules
 vendor
-build
+assets/js/cf-connected-ajax.min.js
+assets/js/connector-ui.min.js
