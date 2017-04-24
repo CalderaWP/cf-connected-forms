@@ -435,8 +435,12 @@ function cf_form_connector_setup_processors( $form ){
 
 			cf_form_connector_set_current_position( $process_record );
 
+			$return_data = cf_form_connector_return_data( $current_form, $stage[ 'ID' ], $process_record[ $stage['ID'] ][ 'entry_id' ], 'back' );
 			// check for ajax
-			wp_send_json( array( 'target' => $stage['ID'] . '_' . (int) $_POST['_cf_frm_ct'], 'form' => Caldera_Forms::render_form( $stage ) ) );
+			wp_send_json( array_merge( array(
+				'target' => $stage[ 'ID' ] . '_' . (int) $_POST[ '_cf_frm_ct' ],
+				'form'   => Caldera_Forms::render_form( $stage )
+			), $return_data ) );
 
 			
 		}
@@ -864,10 +868,12 @@ function cf_form_connector_control_form_load( $out, $form ){
 			 */
 			do_action( 'cf_form_connector_sequence_advanced', $connected_form_id, $form[ 'ID' ], $entry_id, $process_record[ $connected_form_id ] );
 
-			wp_send_json( array(
+			$return_data = cf_form_connector_return_data( $form[ 'ID' ], $connected_form_id, $entry_id );
+			$return_data = array_merge( array(
 				'target' => $form[ 'stage_form' ] . '_' . (int) $_POST[ '_cf_frm_ct' ],
-				'form'   => Caldera_Forms::render_form( $stage_form )
-			) );
+				'form'   => Caldera_Forms::render_form( $stage_form ),
+			), $return_data );
+			wp_send_json( $return_data );
 		}else{
 			// is current = stage ? yup last form last process.
 			if( empty( $form['form_connection'] )
@@ -933,6 +939,39 @@ function cf_form_connector_control_form_load( $out, $form ){
 
 }
 
+/**
+ * Prepare filterable parts of AJAX return
+ *
+ * @since 1.1.1
+ *
+ * NOTE: Add target and form indexes after this or shit will break.
+ *
+ * @param string $last_form_id Last form ID
+ * @param string $connected_form_id Connected form ID
+ * @param int $entry_id Entry ID for connected form
+ * @param string $type Optional. Type of return. Default is "advance"
+ * @return array
+ */
+function cf_form_connector_return_data( $last_form_id, $connected_form_id, $entry_id, $type = 'advance' ){
+	$return_data = array(
+		'connected_form_id' => $connected_form_id,
+		'last_form_id'      => $last_form_id,
+		'entry_id'          => $entry_id,
+		'type'              => $type
+	);
+
+	/**
+	 * Filter data to be sent back to DOM by connected forms
+	 *
+	 * Use to customize data for cf.connected JS event. DOES NOT include target and form which intentionally not filterable
+	 *
+	 * @since 1.1.1
+	 *
+	 * @param array $return_data Data to be sent back to DOM
+	 *
+	 */
+	return apply_filters( 'cf_form_connector_return_data', $return_data );
+}
 
 
 function cf_form_connector_partial_populate_form( $data, $form ){
@@ -1593,6 +1632,7 @@ function cf_form_connected_write_id_to_progress( $entry_id, $base, $current ){
 	}
 	cf_form_connector_set_current_position( $process_record );
 }
+
 
 /**
  * Make sure that the extra fields we add for progress are always hidden

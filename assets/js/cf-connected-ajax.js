@@ -18,6 +18,7 @@ jQuery( function( $ ){
 	} );
 
 	cf_connected_ajax_handler = function( obj ){
+		$( document ).trigger( 'cf.connected', obj );
 		var $target = $( '#' + obj.target ),
 			inst_id = $( obj.form ).find('form.caldera_forms_form').prop('id');
 		$target.replaceWith( obj.form );
