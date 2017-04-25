@@ -1,18 +1,14 @@
 <?php
 /**
- * @package   CF_Connected_Forms
- * @author    Josh Pollock <Josh@CalderaWP.com>
- * @license   GPL-2.0+
- * @link
  * @copyright 2015 David Cramer & Josh Pollock for CalderaWP
  *
  * @wordpress-plugin
  * Plugin Name: Connected Caldera Forms
- * Plugin URI:  https://calderawp.com/downloads/caldera-forms-connector
+ * Plugin URI:  https://calderaforms.com/downloads/caldera-forms-connector
  * Description: Connect multiple Caldera Forms into a sequence of forms
  * Version: 1.1.1-rc-1
- * Author:      Josh Pollock & David Cramer <Calderasaurus@CalderaWP.com>
- * Author URI:  http://calderawp.com
+ * Author:      Caldera Labs
+ * Author URI:  http://calderalabs.org
  * Text Domain: cf-form-connector
  * License:     GPL-2.0+
  * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
@@ -40,7 +36,9 @@ function cf_form_connector_init(){
 	if( ! defined( 'CFCORE_VER' ) ){
 		return;
 	}
+
 	if( ! class_exists( 'Caldera_Forms_Entry_Update' ) ){
+
 		if ( is_admin() || defined( 'DOING_AJAX' ) && DOING_AJAX ) {
 			include_once CF_FORM_CON_PATH . 'vendor/calderawp/dismissible-notice/src/functions.php';
 		}
