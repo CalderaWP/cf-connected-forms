@@ -1452,7 +1452,7 @@ function cf_form_connector_get_all_fields( $connected_form ){
 
 	if( isset( $connected_form[ 'node' ] ) ) {
 
-		foreach ( $connected_form[ 'node' ] as $connected_form ) {
+		foreach ( array_reverse( $connected_form[ 'node' ] ) as $connected_form ) {
 			$_form  = Caldera_Forms_Forms::get_form( $connected_form[ 'form' ] );
 			$fields = array_merge( Caldera_Forms_Forms::get_fields( $_form ), $fields );
 		}

@@ -25,11 +25,13 @@ jQuery( function( $ ){
 		var $newForm =  $( document.getElementById( inst_id ) );
 
 		//scroll to top and focus first field
-		$('html, body').animate({
-			scrollTop: $newForm.offset().top - 200
-		}, 750, function() {
-			$newForm.find( 'input:visible:enabled:first' ).focus();
-		});
+		if ( $newForm.length) {
+			$('html, body').animate({
+				scrollTop: $newForm.offset().top - 200
+			}, 750, function () {
+				$newForm.find('input:visible:enabled:first').focus();
+			});
+		}
 
 		if( typeof caldera_conditionals === "undefined" || typeof caldera_conditionals[inst_id] === "undefined"){
 			return;
