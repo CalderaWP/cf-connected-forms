@@ -292,19 +292,31 @@ function cf_form_connector_init_current_position(){
  * @return array|mixed|void
  */
 function cf_form_connector_get_current_position(){
-		if(is_user_logged_in()){
-			$user_id = get_current_user_id();
-			$data = get_user_meta( $user_id , CF_FORM_CON_SLUG, true );
+	if(is_user_logged_in()){
+		$user_id = get_current_user_id();
+		$data = get_user_meta( $user_id , CF_FORM_CON_SLUG, true );
 
+	}else{
+		// alternate method
+		if( !empty( $_COOKIE['cfcfrm_usr'] ) ){
+			$user_id = $_COOKIE['cfcfrm_usr'];
+			$data = get_option( 'cfcfrm_' .  $user_id, array() );
 		}else{
-			// alternate method
-			if( !empty( $_COOKIE['cfcfrm_usr'] ) ){
-				$user_id = $_COOKIE['cfcfrm_usr'];
-				$data = get_option( 'cfcfrm_' .  $user_id, array() );
-			}else{
-				$data = array();
-			}
+			$user_id = null;
+			$data = array();
 		}
+	}
+
+	/**
+	 * Filter position data
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param array $data Position data
+	 * @param int|String|null $user_id WP User ID or cookie identifier or null
+	 */
+	$data = apply_filters( 'cf_form_connector_position_data', $data, $user_id );
+
 	return $data;
 }
 
