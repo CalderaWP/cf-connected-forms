@@ -326,18 +326,23 @@ function cf_form_connector_get_current_position(){
  * @since 0.2.0
  *
  * @param array $data
+ *
+ * @return int|string|null User identifier
  */
 function cf_form_connector_set_current_position( $data ){
-		if(is_user_logged_in()){
-			$user_id = get_current_user_id();
-			update_user_meta( $user_id, CF_FORM_CON_SLUG, $data );
-		}else{
-			// alternate method
-			if( !empty( $_COOKIE['cfcfrm_usr'] ) ){
-				$user_id = 'cfcfrm_' .  $_COOKIE['cfcfrm_usr'];
-				update_option( $user_id, $data );
-			}
+	$user_id = null;
+	if(is_user_logged_in()){
+		$user_id = get_current_user_id();
+		update_user_meta( $user_id, CF_FORM_CON_SLUG, $data );
+	}else{
+		// alternate method
+		if( !empty( $_COOKIE['cfcfrm_usr'] ) ){
+			$user_id = 'cfcfrm_' .  $_COOKIE['cfcfrm_usr'];
+			update_option( $user_id, $data );
 		}
+	}
+
+	return $user_id;
 }
 
 /**
@@ -491,7 +496,8 @@ function cf_form_connector_setup_processors( $form ){
 				'completed'		=>	false,
 				'current_form'	=>	$form['ID']
 			);
-			cf_form_connector_set_current_position( $process_record );
+
+			$user_id = cf_form_connector_set_current_position( $process_record );
 
 			/**
 			 * Runs when the first step in a Connected Form is submitted
@@ -500,8 +506,9 @@ function cf_form_connector_setup_processors( $form ){
 			 *
 			 * @param string $connected_form_id ID of connected form
 			 * @param int $entry_id If of entry
+			 * @param int|null|string $user_id User identifier (user ID or cookie ID or null) @since 1.2.0
 			 */
-			do_action( 'cf_form_connector_sequence_started', $stage['ID'], $entry_id );
+			do_action( 'cf_form_connector_sequence_started', $stage['ID'], $entry_id, $user_id );
 		}
 	}
 
