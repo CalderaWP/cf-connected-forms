@@ -668,11 +668,18 @@ function cf_form_connector_add_fields_to_entry( Caldera_Forms_Entry $entry, arra
 			continue;
 		}
 
+		if( empty( $value ) ){
+			continue;
+		}
+
+
 		$field = $fields[ $field_id ];
 		if ( Caldera_Forms_Fields::not_support( Caldera_Forms_Field_Util::get_type( $field ), 'entry_list' ) ) {
 			continue;
 		}
 		$slug        = $field[ 'slug' ];
+
+
 		$_value      = array(
 			'entry_id' => $entry_id,
 			'value'    => $value,
@@ -680,6 +687,7 @@ function cf_form_connector_add_fields_to_entry( Caldera_Forms_Entry $entry, arra
 			'slug'     => $slug
 
 		);
+
 		$field_value = new Caldera_Forms_Entry_Field( (object) $_value );
 		$entry->add_field( $field_value );
 
