@@ -679,17 +679,28 @@ function cf_form_connector_add_fields_to_entry( Caldera_Forms_Entry $entry, arra
 		}
 		$slug        = $field[ 'slug' ];
 
+		/** @var Caldera_Forms_Entry_Field $field_obj */
+		$field_obj = $entry->get_field( $field_id );
+		if( $field_obj ){
+			if( $value !== $field_obj->get_value() ) {
+				$field_obj->set_value( $value );
+			}
 
-		$_value      = array(
-			'entry_id' => $entry_id,
-			'value'    => $value,
-			'field_id' => $field_id,
-			'slug'     => $slug
+		}else{
+			$_value = array(
+				'entry_id' => $entry_id,
+				'value'    => $value,
+				'field_id' => $field_id,
+				'slug'     => $slug
 
-		);
+			);
 
-		$field_value = new Caldera_Forms_Entry_Field( (object) $_value );
-		$entry->add_field( $field_value );
+			$field_obj = new Caldera_Forms_Entry_Field( (object) $_value );
+
+		}
+
+		$entry->add_field( $field_obj );
+
 
 	}
 
@@ -894,11 +905,28 @@ function cf_form_connector_control_form_load( $out, $form ){
 			 * @param array $sequence_data Data for current sequence
 			 */
 			do_action( 'cf_form_connector_sequence_advanced', $connected_form_id, $form[ 'ID' ], $entry_id, $process_record[ $connected_form_id ] );
+			$instance_id = isset( $_POST[ '_cf_frm_ct' ] ) ? (int) $_POST[ '_cf_frm_ct' ] : 1;
 
+			$next_form_html = Caldera_Forms::render_form( $stage_form );
 			$return_data = cf_form_connector_return_data( $form[ 'ID' ], $connected_form_id, $entry_id );
+			$next_form = Caldera_Forms_Forms::get_form( $process_record[ $connected_form_id ][ 'current_form' ] );
+			$js_config = new Caldera_Forms_Field_JS( $next_form, $instance_id );
+			$footer_append = '';
+			if( method_exists( 'Caldera_Forms_Render_Util', 'get_footer_object' ) ){
+				$footer_object = Caldera_Forms_Render_Util::get_footer_object( $connected_form_id );
+				if( is_object( $footer_object )  ){
+					$footer_append = $footer_object->get_data_as_string();
+				}
+			}
+
 			$return_data = array_merge( array(
-				'target' => $form[ 'stage_form' ] . '_' . (int) $_POST[ '_cf_frm_ct' ],
-				'form'   => Caldera_Forms::render_form( $stage_form ),
+				'target'        => $form[ 'stage_form' ] . '_' . $instance_id,
+				'form'          => $next_form_html,
+				'instance_id'   => $instance_id,
+				'field_config'  => $js_config->to_array(),
+				'form_id'       => esc_attr( $next_form[ 'ID' ] ),
+				'footer_append' => $footer_append,
+				'form_instance' => esc_attr( $next_form[ 'ID' ] . '_' . $instance_id )
 			), $return_data );
 			wp_send_json( $return_data );
 		}else{
@@ -980,11 +1008,13 @@ function cf_form_connector_control_form_load( $out, $form ){
  * @return array
  */
 function cf_form_connector_return_data( $last_form_id, $connected_form_id, $entry_id, $type = 'advance' ){
+
+
 	$return_data = array(
 		'connected_form_id' => $connected_form_id,
 		'last_form_id'      => $last_form_id,
 		'entry_id'          => $entry_id,
-		'type'              => $type
+		'type'              => $type,
 	);
 
 	/**
