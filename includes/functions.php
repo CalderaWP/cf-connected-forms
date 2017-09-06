@@ -1231,9 +1231,13 @@ add_filter( 'caldera_forms_render_get_form', function( $form ){
 		add_filter('caldera_forms_get_field_types', 'cf_form_connector_register_fields');
 
 
-
+		if( Caldera_Forms_Render_Assets::should_minify() ){
+			$url = CF_FORM_CON_URL . 'assets/js/cf-connected-ajax.min.js';
+		}else{
+			$url = CF_FORM_CON_URL . 'assets/js/cf-connected-ajax.js';
+		}
 		// setup the js handler if ajax
-		wp_enqueue_script( 'cf-form-connector-ajax', CF_FORM_CON_URL . 'assets/js/cf-connected-ajax.min.js', array( 'jquery' ), CF_FORM_CON_VER , true );
+		wp_enqueue_script( 'cf-form-connector-ajax', $url, array( 'jquery' ), CF_FORM_CON_VER , true );
 		$new_form['custom_callback'] = 'cf_connected_ajax_handler';
 
 		//always use ajax
