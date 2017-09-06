@@ -1397,7 +1397,7 @@ function cf_form_connector_export_merge(){
 
 function cf_from_connector_merge_fields( $connected_form ){
 	$merged_fields = array();
-	foreach( $connected_form[ 'node' ] as $node ){
+	foreach( array_reverse( $connected_form[ 'node' ] ) as $node ){
 		$_id = $node[ 'form' ];
 		$_form = Caldera_Forms_Forms::get_form( $_id );
 		if( method_exists( 'Caldera_Forms_Forms', 'get_fields')){
