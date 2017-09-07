@@ -1183,7 +1183,7 @@ add_filter( 'caldera_forms_render_get_form', function( $form ){
 					),
 					'caption' => '',
 					'config' => array(
-						'custom_class' => '',
+						'custom_class' => 'cf-con-btn cf-con-backnav cf-con-backnav-' . $new_form[ 'ID' ],
 						'visibility' => 'all',
 						'type' => 'back',
 						'class' => 'btn btn-default',
@@ -1203,12 +1203,14 @@ add_filter( 'caldera_forms_render_get_form', function( $form ){
 			),
 			'caption' => '',
 			'config' => array(
-				'custom_class' => '',
+				'custom_class' => ( !empty( $has_connections ) ? 'cf-con-btn  cf-con-front-nav cf-con-front-nav-' . $new_form[ 'ID' ] : 'cf-con-btn  cf-con-submit cf-con-submit-' . $new_form[ 'ID' ] ),
 				'visibility' => 'all',
 				'type' => 'next',
 				'class' => 'btn btn-default pull-right',
 			)
 		);
+
+
 		$new_form['fields']['cffld_stage'] = array(
 			'ID' => 'cffld_stage',
 			'type' => 'hidden',
