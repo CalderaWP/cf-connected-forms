@@ -1193,22 +1193,37 @@ add_filter( 'caldera_forms_render_get_form', function( $form ){
 			}
 		}
 
-		$new_form['fields']['cffld_nextnav'] = array(
-			'ID' => 'cffld_nextnav',
-			'type' => 'cfcf_next_nav',
-			'label' => ( !empty( $has_connections ) ? __('Next', 'cf-form-connector' ) : __('Submit', 'cf-form-connector' ) ),
-			'slug' => 'cfcf_next_nav',
-			'conditions' => array(
-				'type' => ''
-			),
-			'caption' => '',
-			'config' => array(
-				'custom_class' => ( !empty( $has_connections ) ? 'cf-con-btn  cf-con-front-nav cf-con-front-nav-' . $new_form[ 'ID' ] : 'cf-con-btn  cf-con-submit cf-con-submit-' . $new_form[ 'ID' ] ),
-				'visibility' => 'all',
-				'type' => 'next',
-				'class' => 'btn btn-default pull-right',
-			)
-		);
+		$is_submit = ! empty( $has_connections );
+
+		/**
+		 * Prevent the next (or submit) button to be added to form
+		 *
+		 * @since 1.1.2
+		 *
+		 * @param bool $use Should next (or submit) button be added to form.
+		 * @param bool $is_submit  Is this a submit button? If false, is next button.
+		 * @param array $new_form Current form
+		 */
+		$add_next = apply_filters( 'cf_form_connector_add_next_btn', true, $is_submit, $new_form, $base_form );
+		if ( $add_next  ) {
+			$new_form[ 'fields' ][ 'cffld_nextnav' ] = array(
+				'ID'         => 'cffld_nextnav',
+				'type'       => 'cfcf_next_nav',
+				'label'      => ($is_submit ? __( 'Next', 'cf-form-connector' ) : __( 'Submit', 'cf-form-connector' ) ),
+				'slug'       => 'cfcf_next_nav',
+				'conditions' => array(
+					'type' => ''
+				),
+				'caption'    => '',
+				'config'     => array(
+					'custom_class' =>  ( $is_submit ? 'cf-con-btn  cf-con-front-nav cf-con-front-nav-' . $new_form[ 'ID' ] : 'cf-con-btn  cf-con-submit cf-con-submit-' . $new_form[ 'ID' ] ),
+					'visibility'   => 'all',
+					'type'         => 'next',
+					'class'        => 'btn btn-default pull-right',
+				)
+			);
+		}
+
 
 
 		$new_form['fields']['cffld_stage'] = array(
