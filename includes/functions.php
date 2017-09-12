@@ -862,10 +862,18 @@ function cf_form_connector_control_form_load( $out, $form ){
 	}
 
 	if( !empty( $form['stage_form'] ) ){
-		$stage_form = Caldera_Forms_Forms::get_form( $form['stage_form'] );
+		$stage_form = Caldera_Forms_Forms::get_form( $form[ 'stage_form' ] );
 		$process_record = cf_form_connector_get_current_position();
-		$process_record[ $form['stage_form'] ][ 'fields' ] = array_merge( ( array ) $process_record[ $form['stage_form'] ]['fields'], $form['fields'] );
-		$process_record[ $form['stage_form'] ][ 'field_values' ] = array_merge( ( array ) $process_record[ $form['stage_form'] ]['field_values'], Caldera_Forms::get_submission_data( $form ) );
+		$fields = array_merge(
+			isset( $process_record[ $form[ 'stage_form'] ]['fields'] ) ? $process_record[ $form[ 'stage_form' ] ][ 'fields' ] : array(),
+			isset( $form[ 'fields' ] ) ?  $form[ 'fields' ]  : array()
+		);
+		$process_record[ $form[ 'stage_form' ] ][ 'fields' ] = $fields;
+		$field_values = array_merge(
+			Caldera_Forms::get_submission_data( $form ),
+			isset( $process_record[ $form[ 'stage_form' ] ][ 'field_values' ] ) ? $process_record[ $form[ 'stage_form'] ][ 'field_values' ] : array()
+		);
+		$process_record[ $form['stage_form'] ][ 'field_values' ] = $field_values;
 		$form = CF_Con_Form_PTrack::maybe_add_connections( $form );
 		if( !empty( $form['form_connection'] ) ){
 
@@ -1203,8 +1211,10 @@ add_filter( 'caldera_forms_render_get_form', function( $form ){
 		 * @param bool $use Should next (or submit) button be added to form.
 		 * @param bool $is_submit  Is this a submit button? If false, is next button.
 		 * @param array $new_form Current form
+		 * @param string $base_form ID of connected form
+		 * @param array $process_record Current progress in sequence
 		 */
-		$add_next = apply_filters( 'cf_form_connector_add_next_btn', true, $is_submit, $new_form, $base_form );
+		$add_next = apply_filters( 'cf_form_connector_add_next_btn', true, $is_submit, $new_form, $base_form, $process_record );
 		if ( $add_next  ) {
 			$new_form[ 'fields' ][ 'cffld_nextnav' ] = array(
 				'ID'         => 'cffld_nextnav',
