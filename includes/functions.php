@@ -270,10 +270,43 @@ function cf_form_connector_verify_id( $form, $id ){
 function cf_form_connector_init_current_position(){
 	if( is_user_logged_in() ){
 		if( isset( $_COOKIE['cfcfrm_usr'] ) ){
-			// kill it
+			$logged_in_tracking = cf_form_connector_get_current_position();
 			$process_record = get_option( 'cfcfrm_' . $_COOKIE['cfcfrm_usr'], array() );
+
+			if( empty( $process_record ) && ! empty(  $logged_in_tracking ) ){
+				$process_record = $logged_in_tracking;
+			}else{
+				if( ! empty( $logged_in_tracking ) ) {
+
+					/**
+					 * Runs when a user logs in and previously tracked progress is about to be written to user meta, and let's you change if data tracked when this user was last logged in has a higher priority than data collected when not logged in or not.
+					 *
+					 * @since 1.2.2
+					 *
+					 * @param bool $prioritize_logged_out Return false to prioritize logged in data over logged out data
+					 * @param array $process_record Previous progress data collected when user was logged out. May be empty
+					 * @param array $logged_in_tracking Previous progress data collected and saved for this user. May be empty.
+					 */
+					$prioritize_logged_out = apply_filters( 'cf_form_connector_prioritize_logged_out', true, $process_record, $logged_in_tracking );
+					foreach ( $logged_in_tracking as $form_id => $progress ) {
+						if ( //logged in has progress for form that logged out didn't, so add it
+							! isset( $process_record[ $form_id ] )
+							//Logged out and logged out have it, but we are prioritizing logged in, so overwrite logged in with logged out.
+							|| ( isset( $process_record[ $form_id ] ) && ! $prioritize_logged_out )
+						) {
+							$process_record[ $form_id ] = $progress;
+						}
+
+
+					}
+
+				}
+
+			}
+
 			cf_form_connector_set_current_position( $process_record );
-			setcookie('cfcfrm_usr', null, time() - 3600, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true);
+			setcookie('cfcfrm_usr', null, time() - 3600, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true );
+
 		}
 	}else{
 		if( !isset( $_COOKIE['cfcfrm_usr'] ) ){
