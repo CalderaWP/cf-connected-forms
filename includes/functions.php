@@ -26,6 +26,7 @@ if ( empty( $_POST[ 'control' ] ) ) {
 	add_filter( 'caldera_forms_pre_do_bracket_magic', 'cf_form_connector_prev_magic_tag', 25, 5 );
 	add_action( 'cf_form_connector_sequence_started', array( 'CF_Con_Form_Partial', 'status_hook' ), 8, 2 );
 	add_action( 'cf_form_connector_sequence_advanced', array( 'CF_Con_Form_Partial', 'add_values_to_main_entry' ), 8, 4  );
+	add_filter( 'caldera_forms_render_get_field', array( 'CF_Con_Form_CalcDefaults', 'filter_field' ), 9 );
 }
 
 //this one is for advanced file fields
@@ -951,7 +952,10 @@ function cf_form_connector_control_form_load( $out, $form ){
 			$next_form_html = Caldera_Forms::render_form( $stage_form );
 			$return_data = cf_form_connector_return_data( $form[ 'ID' ], $connected_form_id, $entry_id );
 			$next_form = Caldera_Forms_Forms::get_form( $process_record[ $connected_form_id ][ 'current_form' ] );
+			$next_form = CF_Con_Form_CalcDefaults::filter_form( $next_form );
 			$js_config = new Caldera_Forms_Field_JS( $next_form, $instance_id );
+
+
 			$footer_append = '';
 			if( method_exists( 'Caldera_Forms_Render_Util', 'get_footer_object' ) ){
 				$footer_object = Caldera_Forms_Render_Util::get_footer_object( $connected_form_id );

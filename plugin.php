@@ -71,6 +71,7 @@ function cf_form_connector_init(){
 		include trailingslashit( CF_FORM_CON_PATH ) . 'includes/functions.php';
 		include trailingslashit( CF_FORM_CON_PATH ) . 'includes/partial.php';
 		include trailingslashit( CF_FORM_CON_PATH ) . 'includes/ptrack.php';
+		include trailingslashit( CF_FORM_CON_PATH ) . 'includes/calcdefaults.php';
 		add_filter('caldera_forms_get_form_processors', 'cf_form_connector_register');
 
 	}

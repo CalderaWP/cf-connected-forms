@@ -38,7 +38,7 @@ jQuery( function( $ ){
 
 			//reinit state
 			var state = new CFState( obj.form_instance, $ );
-			state.init( obj.field_config.fields.defaults );
+			state.init( obj.field_config.fields.defaults, obj.field_config.fields.calcDefaults );
 			window.cfstate[ obj.form_id ] = state;
 
 			//reinit field config
