@@ -1,0 +1,186 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"Project-Id-Version: Connected Caldera Forms\n"
+"POT-Creation-Date: 2017-10-26 20:45+0200\n"
+"PO-Revision-Date: 2017-10-26 20:44+0200\n"
+"Last-Translator: New0 Nicolas Figueira <nico@newo.fr>\n"
+"Language-Team: New0 Nicolas Figueira <nico@newo.fr>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.0.4\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-Flags-xgettext: --add-comments=translators:\n"
+"X-Poedit-WPHeader: plugin.php\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-KeywordsList: __;_e;_n:1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;esc_attr__;"
+"esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c;_n_noop:1,2;"
+"_nx_noop:3c,1,2;__ngettext_noop:1,2\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPathExcluded-0: *.js\n"
+
+#: includes/functions.php:104
+msgid "Connected Form"
+msgstr ""
+
+#: includes/functions.php:149
+msgid "Connections"
+msgstr ""
+
+#: includes/functions.php:150
+msgid "Connected Forms Builder"
+msgstr ""
+
+#: includes/functions.php:157
+msgid "Partial Submissions"
+msgstr ""
+
+#: includes/functions.php:158
+msgid "Settings for partial submissions"
+msgstr ""
+
+#: includes/functions.php:1187
+msgid "Back"
+msgstr ""
+
+#: includes/functions.php:1222
+msgid "Next"
+msgstr ""
+
+#: includes/functions.php:1222
+msgid "Submit"
+msgstr ""
+
+#: includes/functions.php:1294
+msgid "Connected Forms"
+msgstr ""
+
+#: includes/functions.php:1295
+msgid "Connect multiple forms."
+msgstr ""
+
+#: includes/functions.php:1372
+msgid "Back Navigation --- Connected Forms"
+msgstr ""
+
+#: includes/functions.php:1374 includes/functions.php:1385
+msgid "Button"
+msgstr ""
+
+#: includes/functions.php:1375
+msgid "Move Backwards In A Connected Forms Sequence"
+msgstr ""
+
+#: includes/functions.php:1383
+msgid "Forward Navigation --- Connected Forms"
+msgstr ""
+
+#: includes/functions.php:1386
+msgid "Move Forwards In A Connected Forms Sequence"
+msgstr ""
+
+#: includes/templates/connection-builder.php:192
+#: includes/templates/connection-builder.php:310
+msgid "Add Condition"
+msgstr ""
+
+#: includes/templates/connection-builder.php:211
+msgid "Name"
+msgstr ""
+
+#: includes/templates/connection-builder.php:218
+msgid "Back Button"
+msgstr ""
+
+#: includes/templates/connection-builder.php:221
+msgid "Enable Back Navigation"
+msgstr ""
+
+#: includes/templates/connection-builder.php:227
+msgid "Conditions"
+msgstr ""
+
+#: includes/templates/connection-builder.php:231
+msgid "Add Conditional"
+msgstr ""
+
+#: includes/templates/connection-builder.php:237
+msgid "or"
+msgstr ""
+
+#: includes/templates/connection-builder.php:245
+msgid "if"
+msgstr ""
+
+#: includes/templates/connection-builder.php:247
+msgid "and"
+msgstr ""
+
+#: includes/templates/connection-builder.php:267
+msgid "is"
+msgstr ""
+
+#: includes/templates/connection-builder.php:270
+msgid "is not"
+msgstr ""
+
+#: includes/templates/connection-builder.php:273
+msgid "is greater than"
+msgstr ""
+
+#: includes/templates/connection-builder.php:276
+msgid "is less than"
+msgstr ""
+
+#: includes/templates/connection-builder.php:279
+msgid "starts with"
+msgstr ""
+
+#: includes/templates/connection-builder.php:282
+msgid "ends with"
+msgstr ""
+
+#: includes/templates/connection-builder.php:285
+msgid "contains"
+msgstr ""
+
+#: includes/templates/partials.php:13
+msgid "Active Partials"
+msgstr ""
+
+#: includes/templates/partials.php:23
+msgid "Enable"
+msgstr ""
+
+#: includes/templates/partials.php:26
+msgid ""
+"By default, entries in sequence will only be shown in entry viewer when "
+"sequence is completed. Check this option to show partial entries in the "
+"entry viewer."
+msgstr ""
+
+#: vendor/calderawp/dismissible-notice/src/Caldera_Warnings_Dismissible_Notice.php:129
+msgid "Dismiss this notice."
+msgstr ""
+
+#. Plugin Name of the plugin/theme
+msgid "Connected Caldera Forms"
+msgstr ""
+
+#. Plugin URI of the plugin/theme
+msgid "https://calderaforms.com/downloads/caldera-forms-connector"
+msgstr ""
+
+#. Description of the plugin/theme
+msgid "Connect multiple Caldera Forms into a sequence of forms"
+msgstr ""
+
+#. Author of the plugin/theme
+msgid "Caldera Labs"
+msgstr ""
+
+#. Author URI of the plugin/theme
+msgid "http://calderalabs.org"
+msgstr ""
