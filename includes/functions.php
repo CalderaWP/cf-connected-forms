@@ -270,10 +270,43 @@ function cf_form_connector_verify_id( $form, $id ){
 function cf_form_connector_init_current_position(){
 	if( is_user_logged_in() ){
 		if( isset( $_COOKIE['cfcfrm_usr'] ) ){
-			// kill it
+			$logged_in_tracking = cf_form_connector_get_current_position();
 			$process_record = get_option( 'cfcfrm_' . $_COOKIE['cfcfrm_usr'], array() );
+
+			if( empty( $process_record ) && ! empty(  $logged_in_tracking ) ){
+				$process_record = $logged_in_tracking;
+			}else{
+				if( ! empty( $logged_in_tracking ) ) {
+
+					/**
+					 * Runs when a user logs in and previously tracked progress is about to be written to user meta, and let's you change if data tracked when this user was last logged in has a higher priority than data collected when not logged in or not.
+					 *
+					 * @since 1.2.2
+					 *
+					 * @param bool $prioritize_logged_out Return false to prioritize logged in data over logged out data
+					 * @param array $process_record Previous progress data collected when user was logged out. May be empty
+					 * @param array $logged_in_tracking Previous progress data collected and saved for this user. May be empty.
+					 */
+					$prioritize_logged_out = apply_filters( 'cf_form_connector_prioritize_logged_out', true, $process_record, $logged_in_tracking );
+					foreach ( $logged_in_tracking as $form_id => $progress ) {
+						if ( //logged in has progress for form that logged out didn't, so add it
+							! isset( $process_record[ $form_id ] )
+							//Logged out and logged out have it, but we are prioritizing logged in, so overwrite logged in with logged out.
+							|| ( isset( $process_record[ $form_id ] ) && ! $prioritize_logged_out )
+						) {
+							$process_record[ $form_id ] = $progress;
+						}
+
+
+					}
+
+				}
+
+			}
+
 			cf_form_connector_set_current_position( $process_record );
-			setcookie('cfcfrm_usr', null, time() - 3600, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true);
+			setcookie('cfcfrm_usr', null, time() - 3600, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true );
+
 		}
 	}else{
 		if( !isset( $_COOKIE['cfcfrm_usr'] ) ){
@@ -292,19 +325,31 @@ function cf_form_connector_init_current_position(){
  * @return array|mixed|void
  */
 function cf_form_connector_get_current_position(){
-		if(is_user_logged_in()){
-			$user_id = get_current_user_id();
-			$data = get_user_meta( $user_id , CF_FORM_CON_SLUG, true );
+	if(is_user_logged_in()){
+		$user_id = get_current_user_id();
+		$data = get_user_meta( $user_id , CF_FORM_CON_SLUG, true );
 
+	}else{
+		// alternate method
+		if( !empty( $_COOKIE['cfcfrm_usr'] ) ){
+			$user_id = $_COOKIE['cfcfrm_usr'];
+			$data = get_option( 'cfcfrm_' .  $user_id, array() );
 		}else{
-			// alternate method
-			if( !empty( $_COOKIE['cfcfrm_usr'] ) ){
-				$user_id = $_COOKIE['cfcfrm_usr'];
-				$data = get_option( 'cfcfrm_' .  $user_id, array() );
-			}else{
-				$data = array();
-			}
+			$user_id = null;
+			$data = array();
 		}
+	}
+
+	/**
+	 * Filter position data
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param array $data Position data
+	 * @param int|String|null $user_id WP User ID or cookie identifier or null
+	 */
+	$data = apply_filters( 'cf_form_connector_position_data', $data, $user_id );
+
 	return $data;
 }
 
@@ -314,18 +359,23 @@ function cf_form_connector_get_current_position(){
  * @since 0.2.0
  *
  * @param array $data
+ *
+ * @return int|string|null User identifier
  */
 function cf_form_connector_set_current_position( $data ){
-		if(is_user_logged_in()){
-			$user_id = get_current_user_id();
-			update_user_meta( $user_id, CF_FORM_CON_SLUG, $data );
-		}else{
-			// alternate method
-			if( !empty( $_COOKIE['cfcfrm_usr'] ) ){
-				$user_id = 'cfcfrm_' .  $_COOKIE['cfcfrm_usr'];
-				update_option( $user_id, $data );
-			}
+	$user_id = null;
+	if(is_user_logged_in()){
+		$user_id = get_current_user_id();
+		update_user_meta( $user_id, CF_FORM_CON_SLUG, $data );
+	}else{
+		// alternate method
+		if( !empty( $_COOKIE['cfcfrm_usr'] ) ){
+			$user_id = 'cfcfrm_' .  $_COOKIE['cfcfrm_usr'];
+			update_option( $user_id, $data );
 		}
+	}
+
+	return $user_id;
 }
 
 /**
@@ -479,7 +529,8 @@ function cf_form_connector_setup_processors( $form ){
 				'completed'		=>	false,
 				'current_form'	=>	$form['ID']
 			);
-			cf_form_connector_set_current_position( $process_record );
+
+			$user_id = cf_form_connector_set_current_position( $process_record );
 
 			/**
 			 * Runs when the first step in a Connected Form is submitted
@@ -488,8 +539,9 @@ function cf_form_connector_setup_processors( $form ){
 			 *
 			 * @param string $connected_form_id ID of connected form
 			 * @param int $entry_id If of entry
+			 * @param int|null|string $user_id User identifier (user ID or cookie ID or null) @since 1.2.0
 			 */
-			do_action( 'cf_form_connector_sequence_started', $stage['ID'], $entry_id );
+			do_action( 'cf_form_connector_sequence_started', $stage['ID'], $entry_id, $user_id );
 		}
 	}
 
@@ -649,20 +701,39 @@ function cf_form_connector_add_fields_to_entry( Caldera_Forms_Entry $entry, arra
 			continue;
 		}
 
+		if( empty( $value ) ){
+			continue;
+		}
+
+
 		$field = $fields[ $field_id ];
 		if ( Caldera_Forms_Fields::not_support( Caldera_Forms_Field_Util::get_type( $field ), 'entry_list' ) ) {
 			continue;
 		}
 		$slug        = $field[ 'slug' ];
-		$_value      = array(
-			'entry_id' => $entry_id,
-			'value'    => $value,
-			'field_id' => $field_id,
-			'slug'     => $slug
 
-		);
-		$field_value = new Caldera_Forms_Entry_Field( (object) $_value );
-		$entry->add_field( $field_value );
+		/** @var Caldera_Forms_Entry_Field $field_obj */
+		$field_obj = $entry->get_field( $field_id );
+		if( $field_obj ){
+			if( $value !== $field_obj->get_value() ) {
+				$field_obj->set_value( $value );
+			}
+
+		}else{
+			$_value = array(
+				'entry_id' => $entry_id,
+				'value'    => $value,
+				'field_id' => $field_id,
+				'slug'     => $slug
+
+			);
+
+			$field_obj = new Caldera_Forms_Entry_Field( (object) $_value );
+
+		}
+
+		$entry->add_field( $field_obj );
+
 
 	}
 
@@ -824,10 +895,18 @@ function cf_form_connector_control_form_load( $out, $form ){
 	}
 
 	if( !empty( $form['stage_form'] ) ){
-		$stage_form = Caldera_Forms_Forms::get_form( $form['stage_form'] );
+		$stage_form = Caldera_Forms_Forms::get_form( $form[ 'stage_form' ] );
 		$process_record = cf_form_connector_get_current_position();
-		$process_record[ $form['stage_form'] ][ 'fields' ] = array_merge( ( array ) $process_record[ $form['stage_form'] ]['fields'], $form['fields'] );
-		$process_record[ $form['stage_form'] ][ 'field_values' ] = array_merge( ( array ) $process_record[ $form['stage_form'] ]['field_values'], Caldera_Forms::get_submission_data( $form ) );
+		$fields = array_merge(
+			isset( $process_record[ $form[ 'stage_form'] ]['fields'] ) ? $process_record[ $form[ 'stage_form' ] ][ 'fields' ] : array(),
+			isset( $form[ 'fields' ] ) ?  $form[ 'fields' ]  : array()
+		);
+		$process_record[ $form[ 'stage_form' ] ][ 'fields' ] = $fields;
+		$field_values = array_merge(
+			Caldera_Forms::get_submission_data( $form ),
+			isset( $process_record[ $form[ 'stage_form' ] ][ 'field_values' ] ) ? $process_record[ $form[ 'stage_form'] ][ 'field_values' ] : array()
+		);
+		$process_record[ $form['stage_form'] ][ 'field_values' ] = $field_values;
 		$form = CF_Con_Form_PTrack::maybe_add_connections( $form );
 		if( !empty( $form['form_connection'] ) ){
 
@@ -867,11 +946,28 @@ function cf_form_connector_control_form_load( $out, $form ){
 			 * @param array $sequence_data Data for current sequence
 			 */
 			do_action( 'cf_form_connector_sequence_advanced', $connected_form_id, $form[ 'ID' ], $entry_id, $process_record[ $connected_form_id ] );
+			$instance_id = isset( $_POST[ '_cf_frm_ct' ] ) ? (int) $_POST[ '_cf_frm_ct' ] : 1;
 
+			$next_form_html = Caldera_Forms::render_form( $stage_form );
 			$return_data = cf_form_connector_return_data( $form[ 'ID' ], $connected_form_id, $entry_id );
+			$next_form = Caldera_Forms_Forms::get_form( $process_record[ $connected_form_id ][ 'current_form' ] );
+			$js_config = new Caldera_Forms_Field_JS( $next_form, $instance_id );
+			$footer_append = '';
+			if( method_exists( 'Caldera_Forms_Render_Util', 'get_footer_object' ) ){
+				$footer_object = Caldera_Forms_Render_Util::get_footer_object( $connected_form_id );
+				if( is_object( $footer_object )  ){
+					$footer_append = $footer_object->get_data_as_string();
+				}
+			}
+
 			$return_data = array_merge( array(
-				'target' => $form[ 'stage_form' ] . '_' . (int) $_POST[ '_cf_frm_ct' ],
-				'form'   => Caldera_Forms::render_form( $stage_form ),
+				'target'        => $form[ 'stage_form' ] . '_' . $instance_id,
+				'form'          => $next_form_html,
+				'instance_id'   => $instance_id,
+				'field_config'  => $js_config->to_array(),
+				'form_id'       => esc_attr( $next_form[ 'ID' ] ),
+				'footer_append' => $footer_append,
+				'form_instance' => esc_attr( $next_form[ 'ID' ] . '_' . $instance_id )
 			), $return_data );
 			wp_send_json( $return_data );
 		}else{
@@ -953,11 +1049,13 @@ function cf_form_connector_control_form_load( $out, $form ){
  * @return array
  */
 function cf_form_connector_return_data( $last_form_id, $connected_form_id, $entry_id, $type = 'advance' ){
+
+
 	$return_data = array(
 		'connected_form_id' => $connected_form_id,
 		'last_form_id'      => $last_form_id,
 		'entry_id'          => $entry_id,
-		'type'              => $type
+		'type'              => $type,
 	);
 
 	/**
@@ -1126,7 +1224,7 @@ add_filter( 'caldera_forms_render_get_form', function( $form ){
 					),
 					'caption' => '',
 					'config' => array(
-						'custom_class' => '',
+						'custom_class' => 'cf-con-btn cf-con-backnav cf-con-backnav-' . $new_form[ 'ID' ],
 						'visibility' => 'all',
 						'type' => 'back',
 						'class' => 'btn btn-default',
@@ -1136,22 +1234,41 @@ add_filter( 'caldera_forms_render_get_form', function( $form ){
 			}
 		}
 
-		$new_form['fields']['cffld_nextnav'] = array(
-			'ID' => 'cffld_nextnav',
-			'type' => 'cfcf_next_nav',
-			'label' => ( !empty( $has_connections ) ? __('Next', 'cf-form-connector' ) : __('Submit', 'cf-form-connector' ) ),
-			'slug' => 'cfcf_next_nav',
-			'conditions' => array(
-				'type' => ''
-			),
-			'caption' => '',
-			'config' => array(
-				'custom_class' => '',
-				'visibility' => 'all',
-				'type' => 'next',
-				'class' => 'btn btn-default pull-right',
-			)
-		);
+		$is_submit = ! empty( $has_connections );
+
+		/**
+		 * Prevent the next (or submit) button to be added to form
+		 *
+		 * @since 1.1.2
+		 *
+		 * @param bool $use Should next (or submit) button be added to form.
+		 * @param bool $is_submit  Is this a submit button? If false, is next button.
+		 * @param array $new_form Current form
+		 * @param string $base_form ID of connected form
+		 * @param array $process_record Current progress in sequence
+		 */
+		$add_next = apply_filters( 'cf_form_connector_add_next_btn', true, $is_submit, $new_form, $base_form, $process_record );
+		if ( $add_next  ) {
+			$new_form[ 'fields' ][ 'cffld_nextnav' ] = array(
+				'ID'         => 'cffld_nextnav',
+				'type'       => 'cfcf_next_nav',
+				'label'      => ($is_submit ? __( 'Next', 'cf-form-connector' ) : __( 'Submit', 'cf-form-connector' ) ),
+				'slug'       => 'cfcf_next_nav',
+				'conditions' => array(
+					'type' => ''
+				),
+				'caption'    => '',
+				'config'     => array(
+					'custom_class' =>  ( $is_submit ? 'cf-con-btn  cf-con-front-nav cf-con-front-nav-' . $new_form[ 'ID' ] : 'cf-con-btn  cf-con-submit cf-con-submit-' . $new_form[ 'ID' ] ),
+					'visibility'   => 'all',
+					'type'         => 'next',
+					'class'        => 'btn btn-default pull-right',
+				)
+			);
+		}
+
+
+
 		$new_form['fields']['cffld_stage'] = array(
 			'ID' => 'cffld_stage',
 			'type' => 'hidden',
@@ -1174,9 +1291,13 @@ add_filter( 'caldera_forms_render_get_form', function( $form ){
 		add_filter('caldera_forms_get_field_types', 'cf_form_connector_register_fields');
 
 
-
+		if( Caldera_Forms_Render_Assets::should_minify() ){
+			$url = CF_FORM_CON_URL . 'assets/js/cf-connected-ajax.min.js';
+		}else{
+			$url = CF_FORM_CON_URL . 'assets/js/cf-connected-ajax.js';
+		}
 		// setup the js handler if ajax
-		wp_enqueue_script( 'cf-form-connector-ajax', CF_FORM_CON_URL . 'assets/js/cf-connected-ajax.min.js', array( 'jquery' ), CF_FORM_CON_VER , true );
+		wp_enqueue_script( 'cf-form-connector-ajax', $url, array( 'jquery' ), CF_FORM_CON_VER , true );
 		$new_form['custom_callback'] = 'cf_connected_ajax_handler';
 
 		//always use ajax
@@ -1340,7 +1461,7 @@ function cf_form_connector_export_merge(){
 
 function cf_from_connector_merge_fields( $connected_form ){
 	$merged_fields = array();
-	foreach( $connected_form[ 'node' ] as $node ){
+	foreach( array_reverse( $connected_form[ 'node' ] ) as $node ){
 		$_id = $node[ 'form' ];
 		$_form = Caldera_Forms_Forms::get_form( $_id );
 		if( method_exists( 'Caldera_Forms_Forms', 'get_fields')){

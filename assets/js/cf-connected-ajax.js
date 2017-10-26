@@ -33,11 +33,36 @@ jQuery( function( $ ){
 			});
 		}
 
+		if( obj.hasOwnProperty( 'field_config' ) ){
+			$( obj.footer_append ).appendTo( 'body' );
+
+			//reinit state
+			var state = new CFState( obj.form_instance, $ );
+			state.init( obj.field_config.fields.defaults );
+			window.cfstate[ obj.form_id ] = state;
+
+			//reinit field config
+			config_object = new Caldera_Forms_Field_Config( obj.field_config.configs, $(document.getElementById( obj.form_id ) ), $, state );
+			config_object.init();
+
+			//check for star fields and reinit them
+			if( obj.field_config.fields.hasOwnProperty( 'inputs' ) && obj.field_config.fields.inputs.length ){
+				$.each( obj.field_config.fields.inputs, function( i, field ){
+					if( 'star_rating' === field.type ){
+						var func = field.id + '_stars';
+						window[func].apply(null, [] );
+					}
+				})
+			}
+		}
+
 		if( typeof caldera_conditionals === "undefined" || typeof caldera_conditionals[inst_id] === "undefined"){
 			return;
 		}
 		if( typeof calders_forms_init_conditions === 'function'){
 			calders_forms_init_conditions();
 		}
+
+
 	}
 });

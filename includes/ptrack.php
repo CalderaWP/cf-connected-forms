@@ -3,7 +3,7 @@
 /**
  * Class CF_Con_Form_PTrack
  *
- * Tracks the 'form-connector' processor added dynamically to cotnrol next form load.
+ * Tracks the 'form-connector' processor added dynamically to control next form load.
  *
  * Added to deal with backwards nagivagtion not working and getting rid of global $form use.
  *
