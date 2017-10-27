@@ -47,7 +47,7 @@ class CF_Con_Form_CalcDefaults {
 							'calc_default'
 						) as $key
 					) {
-						if ( self::is_prev_magic( $opt[ $key ] ) ) {
+						if ( isset( $opt[ $key ] ) && self::is_prev_magic( $opt[ $key ] ) ) {
 							$field[ 'config' ][ 'option' ][ $opt_id ][ $key ] = Caldera_Forms::do_magic_tags( $field[ 'config' ][ 'option' ][ $opt_id ][ $key ] );
 
 						}
