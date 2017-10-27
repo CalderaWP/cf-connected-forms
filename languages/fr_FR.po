@@ -1,0 +1,192 @@
+msgid ""
+msgstr ""
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Project-Id-Version: Connected Caldera Forms\n"
+"POT-Creation-Date: 2017-10-26 20:19+0200\n"
+"PO-Revision-Date: 2017-10-26 20:37+0200\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.0.4\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-Flags-xgettext: --add-comments=translators:\n"
+"X-Poedit-WPHeader: plugin.php\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-KeywordsList: __;_e;_n:1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;"
+"esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;"
+"esc_html_x:1,2c;_n_noop:1,2;_nx_noop:3c,1,2;__ngettext_noop:1,2\n"
+"Last-Translator: New0 Nicolas Figueira <nico@newo.fr>\n"
+"Language: fr_FR\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPathExcluded-0: *.js\n"
+
+#: includes/functions.php:104
+msgid "Connected Form"
+msgstr "Formulaires connectés"
+
+#: includes/functions.php:149
+msgid "Connections"
+msgstr "Connexions"
+
+#: includes/functions.php:150
+msgid "Connected Forms Builder"
+msgstr "Générateur de formulaires connectés"
+
+#: includes/functions.php:157
+msgid "Partial Submissions"
+msgstr "Soumissions partielles"
+
+#: includes/functions.php:158
+msgid "Settings for partial submissions"
+msgstr "Réglages des soumissions partielles"
+
+#: includes/functions.php:1141
+msgid "Back"
+msgstr "Retour"
+
+#: includes/functions.php:1161
+msgid "Next"
+msgstr "Suivant"
+
+#: includes/functions.php:1161
+msgid "Submit"
+msgstr "Soumettre"
+
+#: includes/functions.php:1225
+msgid "Connected Forms"
+msgstr "Formulaires connectés"
+
+#: includes/functions.php:1226
+msgid "Connect multiple forms."
+msgstr "Connecter plusieurs formulaires."
+
+#: includes/functions.php:1303
+msgid "Back Navigation --- Connected Forms"
+msgstr "Menu de retour --- Formulaires connectés"
+
+#: includes/functions.php:1305 includes/functions.php:1316
+msgid "Button"
+msgstr "Bouton"
+
+#: includes/functions.php:1306
+msgid "Move Backwards In A Connected Forms Sequence"
+msgstr "Reculer dans la navigation entre formulaire connectés"
+
+#: includes/functions.php:1314
+msgid "Forward Navigation --- Connected Forms"
+msgstr "Menu suivant --- Formulaires connectés"
+
+#: includes/functions.php:1317
+msgid "Move Forwards In A Connected Forms Sequence"
+msgstr "Avancer dans la navigation entre formulaires connectés"
+
+#: includes/templates/connection-builder.php:192
+#: includes/templates/connection-builder.php:310
+msgid "Add Condition"
+msgstr "Ajouter une condition"
+
+#: includes/templates/connection-builder.php:211
+msgid "Name"
+msgstr "Nom"
+
+#: includes/templates/connection-builder.php:218
+msgid "Back Button"
+msgstr "Bouton retour"
+
+#: includes/templates/connection-builder.php:221
+msgid "Enable Back Navigation"
+msgstr "Activer le bouton retour"
+
+#: includes/templates/connection-builder.php:227
+msgid "Conditions"
+msgstr "Conditions"
+
+#: includes/templates/connection-builder.php:231
+msgid "Add Conditional"
+msgstr "Ajouter condition"
+
+#: includes/templates/connection-builder.php:237
+msgid "or"
+msgstr "ou"
+
+#: includes/templates/connection-builder.php:245
+msgid "if"
+msgstr "si"
+
+#: includes/templates/connection-builder.php:247
+msgid "and"
+msgstr "et"
+
+#: includes/templates/connection-builder.php:267
+msgid "is"
+msgstr "est"
+
+#: includes/templates/connection-builder.php:270
+msgid "is not"
+msgstr "n'est pas"
+
+#: includes/templates/connection-builder.php:273
+msgid "is greater than"
+msgstr "est plus grand que"
+
+#: includes/templates/connection-builder.php:276
+msgid "is less than"
+msgstr "est inférieur à"
+
+#: includes/templates/connection-builder.php:279
+msgid "starts with"
+msgstr "commence par"
+
+#: includes/templates/connection-builder.php:282
+msgid "ends with"
+msgstr "termine par"
+
+#: includes/templates/connection-builder.php:285
+msgid "contains"
+msgstr "contient"
+
+#: includes/templates/partials.php:13
+msgid "Active Partials"
+msgstr "Activer les envois partiels"
+
+#: includes/templates/partials.php:23
+msgid "Enable"
+msgstr "Activer"
+
+#: includes/templates/partials.php:26
+msgid ""
+"By default, entries in sequence will only be shown in entry viewer when "
+"sequence is completed. Check this option to show partial entries in the "
+"entry viewer."
+msgstr ""
+"Par défaut, les données des formulaires apparaissent dans le tableau "
+"d'entrées lorsque le dernier formulaire est envoyé. En activant cette "
+"option, chaque formulaire sera enregistré dans le tableau d'entrées "
+"bien que la séquence ne soit pas complète."
+
+#: vendor/calderawp/dismissible-notice/src/Caldera_Warnings_Dismissible_Notice.php:129
+msgid "Dismiss this notice."
+msgstr "Supprimer cette avertissement."
+
+#. Plugin Name of the plugin/theme
+msgid "Connected Caldera Forms"
+msgstr "Caldera Forms connectés"
+
+#. Plugin URI of the plugin/theme
+msgid "https://calderaforms.com/downloads/caldera-forms-connector"
+msgstr "https://calderaforms.com/downloads/caldera-forms-connector"
+
+#. Description of the plugin/theme
+msgid "Connect multiple Caldera Forms into a sequence of forms"
+msgstr ""
+"Créez une suite de formulaires en séquence en connectant plusieurs "
+"formulaires Caldera Forms."
+
+#. Author of the plugin/theme
+msgid "Caldera Labs"
+msgstr "Caldera Labs"
+
+#. Author URI of the plugin/theme
+msgid "http://calderalabs.org"
+msgstr "http://calderalabs.org"
