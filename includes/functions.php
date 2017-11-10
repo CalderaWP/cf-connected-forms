@@ -367,6 +367,10 @@ function cf_form_connector_set_current_position( $data ){
 	$user_id = null;
 	if(is_user_logged_in()){
 		$user_id = get_current_user_id();
+		if( empty( $data[ 'CF5a04d4c0420c3'] ) ){
+			$xx = debug_backtrace();
+			$x= 1;
+		}
 		update_user_meta( $user_id, CF_FORM_CON_SLUG, $data );
 	}else{
 		// alternate method
@@ -528,7 +532,8 @@ function cf_form_connector_setup_processors( $form ){
 				'fields'		=>	array(),
 				'field_values'	=>	array(),
 				'completed'		=>	false,
-				'current_form'	=>	$form['ID']
+				'current_form'	=>	$form['ID'],
+				'first_form' 	=> $form[ 'ID' ],
 			);
 
 			$user_id = cf_form_connector_set_current_position( $process_record );
@@ -989,8 +994,24 @@ function cf_form_connector_control_form_load( $out, $form ){
 					$data =  $process_record[ $form['stage_form'] ][ 'field_values' ];
 					cf_form_connector_save_final( $connected_form, $data, $process_record[ $connected_form[ 'ID' ] ][ 'fields' ], $entry_id );
 
-					$process_record[ $form['stage_form'] ] = array();
-					cf_form_connector_set_current_position( $process_record );
+					/**
+					 * Choose to clear saved sequence from tracking data when sequence is complete
+					 *
+					 * @since 1.3.0
+					 *
+					 * @param bool $clear Default is true.
+					 * @param array $connected_form Connected form's config
+					 */
+					if ( apply_filters( 'cf_form_connector_clear_after_complete', true, $connected_form ) ) {
+						$process_record[ $form['stage_form'] ] = array();
+					}	else{
+						$process_record[ $connected_form[ 'ID' ] ][ 'current_form' ] = $process_record[ $connected_form[ 'ID' ] ] [ 'first_form' ];
+						$process_record[ $connected_form[ 'ID' ] ]['completed'] =  false;
+					}
+
+					cf_form_connector_set_current_position($process_record);
+
+
 					if (  class_exists( 'Caldera_Forms_Magic_Summary' ) ) {
 						$message_setting = $connected_form[ 'mailer' ][ 'email_message' ];
 						if ( false !== strpos( $message_setting, '{summary}' ) ) {
@@ -1134,12 +1155,23 @@ add_filter( 'caldera_forms_render_get_form', function( $form ){
 				}
 			}
 			$new_form = Caldera_Forms_Forms::get_form( $process_record[ $form['ID'] ]['current_form'] );
+			if( ! is_array( $new_form  ) || empty( $new_form[ 'ID' ] ) ){
+				reset( $form[ 'node' ] );
+				$new_form_id = ! empty( $form[ 'node' ][ key( $form[ 'node' ] ) ] )
+					//use first index of form[ 'node' ] which <em>should</em> always be there
+					? $form[ 'node' ][ key( $form[ 'node' ] ) ][ 'form' ]
+					//use the connected form ID
+						: $form[ 'ID' ];
+
+				$new_form = Caldera_Forms::get_form( $new_form_id );
+			}
+
 			if( !empty( $process_record[ $form['ID'] ][ $new_form['ID'] ]['pre_data'] ) && empty( $process_record[ $form['ID'] ][ $new_form['ID'] ]['id'] ) ){
 				add_filter( 'caldera_forms_render_pre_get_entry', 'cf_form_connector_partial_populate_form', 10, 2 );
 			}
 		}
 
-		if( empty( $new_form ) ){
+		if( ! is_array( $new_form  ) || empty( $new_form[ 'ID' ] ) ){
 			// not form replacement, load up base
 			$new_form = Caldera_Forms_Forms::get_form( $base_form );
 		}
@@ -1770,3 +1802,6 @@ add_filter( 'caldera_forms_field_attributes', function( $attrs, $field, $form){
 	}
 	return $attrs;
 }, 10, 3 );
+
+
+

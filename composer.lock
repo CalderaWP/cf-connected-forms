@@ -4,7 +4,6 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "76082dff1304b5c316abe507139f25ca",
     "content-hash": "721f06675ea6ca94a80d97c0ab9cabb1",
     "packages": [
         {
@@ -33,7 +32,7 @@
                 }
             ],
             "description": "Creates a dismissible--via AJAX--admin nag.",
-            "time": "2015-08-24 20:27:16"
+            "time": "2015-08-24T20:27:16+00:00"
         },
         {
             "name": "calderawp/licensing-helper",
@@ -41,12 +40,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/CalderaWP/licensing-helper.git",
-                "reference": "f378f3ffd1f527360d0b462ecebced4c77e78a27"
+                "reference": "05b677379c11bb7417944b68e0aa1cbe7c3cc8e6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/CalderaWP/licensing-helper/zipball/f378f3ffd1f527360d0b462ecebced4c77e78a27",
-                "reference": "f378f3ffd1f527360d0b462ecebced4c77e78a27",
+                "url": "https://api.github.com/repos/CalderaWP/licensing-helper/zipball/05b677379c11bb7417944b68e0aa1cbe7c3cc8e6",
+                "reference": "05b677379c11bb7417944b68e0aa1cbe7c3cc8e6",
                 "shasum": ""
             },
             "require": {
@@ -79,7 +78,7 @@
             "keywords": [
                 "wordpress"
             ],
-            "time": "2016-11-06 19:40:16"
+            "time": "2017-09-17T19:52:14+00:00"
         }
     ],
     "packages-dev": [],
