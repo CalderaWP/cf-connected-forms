@@ -42,9 +42,11 @@ class CF_Con_Form_CalcDefaults {
 				foreach ( $field[ 'config' ][ 'option' ] as $opt_id => $opt ) {
 					foreach (
 						array(
-							'default',
+						    'default',
+							'label',
 							'value',
-							'calc_default'
+							'calc_value',
+                            'calc_default'
 						) as $key
 					) {
 						if ( isset( $opt[ $key ] ) && self::is_prev_magic( $opt[ $key ] ) ) {
